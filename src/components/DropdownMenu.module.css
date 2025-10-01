@@ -1,0 +1,25 @@
+.content {
+  min-width: 150px;
+  background-color: var(--color-layer3-bg);
+  border: var(--border-layer3);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-2);
+}
+
+.item {
+  font-size: var(--font-size-medium);
+  color: var(--color-layer3-fg);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-2) var(--spacing-4);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: var(--border-input-focused);
+  }
+
+  &[data-highlighted] {
+    color: var(--color-accent-fg);
+    background-color: var(--color-accent);
+    outline: none;
+  }
+}

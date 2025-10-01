@@ -1,6 +1,8 @@
 import { useAtomValue } from "jotai";
 
-import DownloadButtonBase from "./DownloadButtonBase";
+import DownloadIcon from "@/assets/icons/DownloadIcon.svg?react";
+
+import IconButton from "@/components/IconButton";
 
 import { simulationResultAtom } from "@/globals/workspace/simulation";
 import {
@@ -35,13 +37,11 @@ const DownloadTableButton = () => {
     const firstColumn = columns[0];
     if (!firstColumn) return;
 
-    {
-      const line = [];
-      for (const { title } of columns) {
-        line.push(escapeCsvCell(title));
-      }
-      lines.push(line.join(","));
+    const line = [];
+    for (const { title } of columns) {
+      line.push(escapeCsvCell(title));
     }
+    lines.push(line.join(","));
 
     for (let i = 0; i < firstColumn.values.length; i++) {
       const line = [];
@@ -56,7 +56,11 @@ const DownloadTableButton = () => {
     promptDownloadString(`Table of ${workspaceName}`, csv, "text/csv");
   };
 
-  return <DownloadButtonBase onClick={handleClick} />;
+  return (
+    <IconButton label="Download" onClick={handleClick}>
+      <DownloadIcon width="1em" height="1em" />
+    </IconButton>
+  );
 };
 
 export default DownloadTableButton;

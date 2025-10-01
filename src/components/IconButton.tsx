@@ -5,12 +5,13 @@ import styles from "./IconButton.module.css";
 
 import { Tooltip } from "./Tooltip";
 
-export interface IconButtonProps {
+export interface IconButtonProps extends React.ComponentProps<"button"> {
   label: string;
   onClick?: () => void;
   disabled?: boolean;
   /** default is "normal" */
   size?: "normal" | "small";
+  ref?: React.RefObject<HTMLButtonElement>;
   children: React.ReactNode;
 }
 
@@ -19,7 +20,9 @@ const IconButton = ({
   onClick,
   disabled = false,
   size = "normal",
+  ref,
   children,
+  ...rest
 }: IconButtonProps) => {
   return (
     <Tooltip text={label}>
@@ -32,6 +35,8 @@ const IconButton = ({
         onClick={onClick}
         disabled={disabled}
         aria-label={label}
+        ref={ref}
+        {...rest}
       >
         {children}
       </button>

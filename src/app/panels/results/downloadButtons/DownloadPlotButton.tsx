@@ -1,7 +1,16 @@
 import { useAtomValue } from "jotai";
 import * as echarts from "echarts/core";
 
-import DownloadButtonBase from "./DownloadButtonBase";
+import DownloadIcon from "@/assets/icons/DownloadIcon.svg?react";
+
+import IconButton from "@/components/IconButton";
+import {
+  DropdownMenuItem,
+  DropdownMenuRoot,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/DropdownMenu";
+import { useToast } from "@/components/Toast";
 
 import { simulationResultAtom } from "@/globals/workspace/simulation";
 import { datasetsAtom } from "@/globals/workspace/overlays";
@@ -15,7 +24,7 @@ import {
 import { useScanIndependentVariable } from "@/features/simulation/useScanIndependentVariable";
 import { xAxisTitleAtom, yAxisTitleAtom } from "@/globals/workspace/plot";
 import { generatePlotParameters } from "../generatePlotParameters";
-import { promptDownloadUrl } from "@/features/download";
+import { promptDownloadString, promptDownloadUrl } from "@/features/download";
 
 const WIDTH = 800;
 const HEIGHT = 800;
@@ -32,12 +41,12 @@ const DownloadPlotButton = () => {
   const yAxisTitle = useAtomValue(yAxisTitleAtom);
   const datasets = useAtomValue(datasetsAtom);
 
-  const handleClick = () => {
-    if (!result) return;
+  const { toast } = useToast();
 
-    const canvas = document.createElement("canvas");
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
+  const downloadName = `Plot of ${workspaceName}`;
+
+  const getPlotOptions = () => {
+    if (!result) return;
 
     const { plotOptions } = generatePlotParameters(
       result,
@@ -57,19 +66,71 @@ const DownloadPlotButton = () => {
       datasets,
     );
 
-    const chart = echarts.init(canvas as unknown as HTMLCanvasElement);
+    return plotOptions;
+  };
+
+  const handlePngDownload = () => {
+    const plotOptions = getPlotOptions();
+    if (!plotOptions) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
+    const chart = echarts.init(canvas, null, {
+      renderer: "canvas",
+    });
     chart.setOption(plotOptions);
 
     canvas.toBlob((blob) => {
       if (!blob) return;
 
       const url = URL.createObjectURL(blob);
-      promptDownloadUrl(`Plot of ${workspaceName}`, url);
+      promptDownloadUrl(downloadName, url);
       URL.revokeObjectURL(url);
     });
   };
 
-  return <DownloadButtonBase onClick={handleClick} />;
+  const handleSvgDownload = () => {
+    const plotOptions = getPlotOptions();
+    if (!plotOptions) return;
+
+    const container = document.createElement("div");
+
+    const chart = echarts.init(container, null, {
+      renderer: "svg",
+      width: WIDTH,
+      height: HEIGHT,
+    });
+    chart.setOption(plotOptions);
+
+    const svg = container.querySelector("svg");
+    if (!svg) {
+      toast({
+        type: "error",
+        title: "Download failed",
+        description: "Failed to generate SVG",
+      });
+      return;
+    }
+
+    promptDownloadString(downloadName, svg.outerHTML, "image/svg+xml");
+  };
+
+  return (
+    <DropdownMenuRoot>
+      <DropdownMenuTrigger>
+        <IconButton label="Download">
+          <DownloadIcon width="1em" height="1em" />
+        </IconButton>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent>
+        <DropdownMenuItem name="Download as PNG" onSelect={handlePngDownload} />
+        <DropdownMenuItem name="Download as SVG" onSelect={handleSvgDownload} />
+      </DropdownMenuContent>
+    </DropdownMenuRoot>
+  );
 };
 
 export default DownloadPlotButton;
