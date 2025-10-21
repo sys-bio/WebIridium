@@ -40,6 +40,7 @@ import SlidersPanel from "./sliders/SlidersPanel";
 
 import ResultTabbedPanel from "./results/ResultsTabbedPanel";
 import PlotSettingsPanel from "./PlotSettingsPanel";
+import ChatPanel from "./ChatPanel";
 
 const SAVE_INTERVAL = 60_000; // in ms
 
@@ -103,6 +104,7 @@ const AppContent = () => {
               <SteadyStatePanel visible={currentLeftPanel === "Steady State"} />
               <HistoryPanel visible={currentLeftPanel === "History"} />
               <ExamplesPanel visible={currentLeftPanel === "Examples"} />
+              <ChatPanel visible = {currentLeftPanel === "Chat"} />
             </Allotment.Pane>
 
             <Allotment.Pane priority={LayoutPriority.High}>

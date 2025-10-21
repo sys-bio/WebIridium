@@ -9,6 +9,7 @@ import ParameterScanIcon from "@/assets/icons/ParameterScanIcon.svg?react";
 import SteadyStateIcon from "@/assets/icons/SteadyStateIcon.svg?react";
 import HistoryIcon from "@/assets/icons/HistoryIcon.svg?react";
 import NotebookIcon from "@/assets/icons/NotebookIcon.svg?react";
+import RobotIcon from "@/assets/icons/RobotIcon.svg?react";
 import { Tooltip } from "@/components/Tooltip";
 
 const PANEL_ICONS: Record<
@@ -20,6 +21,7 @@ const PANEL_ICONS: Record<
   "Steady State": SteadyStateIcon,
   History: HistoryIcon,
   Examples: NotebookIcon,
+  Chat: RobotIcon,
 } as const;
 
 // These one's appear the at the top, the rest appear at the bottom of the bar

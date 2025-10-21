@@ -6,7 +6,8 @@ export type LeftPanel =
   | "Steady State"
   | "Parameter Scan"
   | "History"
-  | "Examples";
+  | "Examples"
+  | "Chat";
 
 export type RightPanel = "Results";
 
@@ -49,6 +50,7 @@ export const availableLeftPanelsAtom: Atom<LeftPanel[]> = atom((get) => {
     "Parameter Scan",
     "History",
     "Examples",
+    "Chat",
   ]);
 });
 
