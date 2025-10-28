@@ -289,10 +289,17 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeSanitize]}
                       components={{
-                        code({ node, inline, className, children, ...props }) {
+                        code({
+                          node,
+                          inline,
+                          className,
+                          children,
+                          ...props
+                        }: any) {
                           const codeText = String(children).replace(/\n$/, "");
-                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                           const language =
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             /language-(\w+)/.exec(className || "")?.[1] ?? "";
                           return inline ? (
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
