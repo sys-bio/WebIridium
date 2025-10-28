@@ -104,7 +104,7 @@ const AppContent = () => {
               <SteadyStatePanel visible={currentLeftPanel === "Steady State"} />
               <HistoryPanel visible={currentLeftPanel === "History"} />
               <ExamplesPanel visible={currentLeftPanel === "Examples"} />
-              <ChatPanel visible = {currentLeftPanel === "Chat"} />
+              <ChatPanel visible={currentLeftPanel === "Chat"} />
             </Allotment.Pane>
 
             <Allotment.Pane priority={LayoutPriority.High}>

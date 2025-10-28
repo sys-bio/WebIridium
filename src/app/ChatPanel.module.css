@@ -97,7 +97,9 @@
 }
 
 .messageBubble code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", "Helvetica Neue", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono",
+    "Helvetica Neue", monospace;
   font-size: var(--font-size-medium);
 }
 
