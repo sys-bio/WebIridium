@@ -2,11 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
-
   padding: var(--spacing-panel);
   height: 100%;
   width: 100%;
-
   overflow: hidden;
   min-height: 0;
 }
@@ -16,8 +14,50 @@
   flex-direction: column;
   height: 100%;
   background: var(--color-layer0-bg);
-  border-radius: var(--radius-2);
+  border-radius: var(--border-radius);
   min-height: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+}
+
+.optionsButton {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
+  background: transparent;
+  border: 1px solid var(--color-layer2-border);
+  color: var(--color-layer1-fg);
+  cursor: pointer;
+}
+
+.optionsPanel {
+  padding: var(--spacing-2);
+  border-bottom: 1px solid var(--color-layer2-border);
+  background: color-mix(in oklch, var(--color-layer0-bg) 95%, transparent);
+}
+
+.optionsRow {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+}
+
+.clearKeyButton {
+  padding: 0 var(--spacing-3);
+  border-radius: var(--border-radius);
+  background: var(--color-button-bg);
+  color: var(--color-button-fg);
+  border: 1px solid var(--color-button-border);
+  cursor: pointer;
+}
+
+.optionsNote {
+  color: var(--color-layer1-fg);
+  font-size: var(--font-size-small);
 }
 
 .messages {
@@ -112,7 +152,7 @@
 
 .codeBlockWrapper pre {
   padding: var(--spacing-2);
-  border-radius: var(--radius-1);
+  border-radius: var(--border-radius);
   overflow: auto;
   margin: 0;
 }
@@ -159,21 +199,44 @@
   margin-top: var(--spacing-2);
 }
 
-.input {
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
-  min-height: 2.6rem;
-  max-height: 8rem;
+  --chat-input-min-height: 3.5rem;
+  --chat-input-max-height: 20rem;
+  min-height: var(--chat-input-min-height);
+  max-height: var(--chat-input-max-height);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--chat-input-min-height);
   padding: var(--spacing-2);
-  border-radius: var(--radius-1);
-  border: 1px solid var(--color-layer2-border);
-  resize: vertical;
-  background: transparent;
+  border-radius: var(--border-radius);
+  border-color: var(--color-layer2-border);
+  resize: none;
+  overflow: hidden;
+  background: var(--color-layer1-bg);
   color: var(--color-layer1-fg);
+  scrollbar-width: thin;
+}
+
+.input::-webkit-scrollbar {
+  width: 12px;
+}
+.input::-webkit-scrollbar-track {
+  background: transparent;
+}
+.input::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--color-layer2-fg) 45%, transparent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 .sendButton {
   padding: 0 var(--spacing-3);
-  border-radius: var(--radius-1);
+  border-radius: var(--border-radius);
   background: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
@@ -207,7 +270,7 @@
 .apiKeyInput {
   flex: 1 1 auto;
   padding: var(--spacing-2);
-  border-radius: var(--radius-1);
+  border-radius: var(--border-radius);
   border: 1px solid var(--color-layer2-border);
   background: transparent;
   color: var(--color-layer1-fg);
@@ -215,7 +278,7 @@
 
 .apiKeyButton {
   padding: 0 var(--spacing-3);
-  border-radius: var(--radius-1);
+  border-radius: var(--border-radius);
   background: var(--color-button-bg);
   color: var(--color-button-fg);
   border: 1px solid var(--color-button-border);
@@ -261,7 +324,6 @@
   background: transparent;
 }
 .messages::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--color-layer2-fg) 45%, transparent);
   border: 3px solid transparent;
   background-clip: padding-box;
 }

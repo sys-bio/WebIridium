@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAtom, useSetAtom } from "jotai";
+import { apiKeyAtom, saveAtom } from "@/globals/saving";
+import { requestSavedData } from "@/features/saving";
 import styles from "./ChatPanel.module.css";
 import PanelTitle from "../components/PanelTitle";
 import PulseLoader from "../components/PulseLoader";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
+import type { OpenAiResponse } from "@/features/chat/API-models/OpenAIModel";
 
 export interface ChatPanelProps {
   visible: boolean;
@@ -19,10 +22,14 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
 
   const [input, setInput] = useState("");
   const [waitingForReply, setWaitingForReply] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
+
+  // Use the shared apiKeyAtom so saving and other globals can operate on it.
+  const [apiKey, setApiKey] = useAtom(apiKeyAtom);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const requestInFlightRef = useRef(false);
+  const setSave = useSetAtom(saveAtom);
 
   useEffect(() => {
     const el = messagesRef.current;
@@ -32,15 +39,45 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   }, [messages]);
 
   const saveApiKey = useCallback(() => {
-    setApiKey(apiKeyInput || null);
+    // set the atom and trigger the global save flow which persists via commitSavedData
+    if (apiKeyInput) {
+      setApiKey(apiKeyInput);
+    } else {
+      setApiKey(null);
+    }
     setApiKeyInput("");
-  }, [apiKeyInput]);
+    // trigger a save (fire-and-forget)
+    try {
+      void setSave();
+    } catch (_e) {
+      void _e;
+    }
+  }, [apiKeyInput, setApiKey, setSave]);
+
+  // load stored API key from the saved workspace on mount
+  useEffect(() => {
+    let mounted = true;
+    void (async () => {
+      try {
+        const data = await requestSavedData();
+        const key = data?.workspace?.apiKey ?? null;
+        if (mounted && key) setApiKey(key);
+      } catch (_e) {
+        void _e;
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [setApiKey]);
+
+  const [showOptions, setShowOptions] = useState(false);
 
   const sendMessage = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    if (waitingForReply) return; // prevent sending while waiting
-    if (!apiKey) return; // require API key before sending
+    if (waitingForReply) return;
+    if (!apiKey) return;
 
     const userMsg: Message = { id: String(Date.now()), role: "user", text: trimmed };
     const placeholderId = `llm-pending-${Date.now()}`;
@@ -54,11 +91,13 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     // prevent duplicate requests in the same tick (e.g., double click or double enter)
     if (requestInFlightRef.current) return;
 
-    // create the new message list and update UI immediately
+    // append placeholder and clear input immediately
     const newMessages = [...messages, userMsg, llmPlaceholder];
     setMessages(newMessages);
     setInput("");
-    // set waiting early to block duplicate sends
+    // reset inline height so textarea returns to default after send
+    if (inputRef.current) inputRef.current.style.height = "";
+    // mark waiting to block duplicate sends
     setWaitingForReply(true);
     // mark request immediately so further calls are blocked synchronously
     requestInFlightRef.current = true;
@@ -90,11 +129,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
           throw new Error(`OpenAI error ${resp.status}: ${body}`);
         }
 
-        // TODO: cleaner to write these classes out elsewhere
-        type OpenAiMessage = { text: string };
-        type OpenAiOutput = { content: OpenAiMessage[] };
-        type OpenAiResponse = { output: OpenAiOutput[] };
-
         const data = (await resp.json()) as OpenAiResponse;
         const reply = data?.output?.[0]?.content[0]?.text ?? "(no response)";
         setMessages((cur) => cur.map((m) => (m.id === placeholderId ? { ...m, text: reply, thinking: false } : m)));
@@ -109,21 +143,72 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   }, [input, waitingForReply, apiKey, messages]);
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (waitingForReply) return;
-    if (!apiKey) return;
+    if (waitingForReply || !apiKey) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
+  const adjustTextareaHeight = useCallback((el?: HTMLTextAreaElement | null) => {
+    const ta = el ?? inputRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const wrapper = ta.parentElement;
+    const computedTarget = wrapper ? window.getComputedStyle(wrapper) : window.getComputedStyle(ta);
+    const maxHeightStr = computedTarget.maxHeight || "0px";
+    const maxHeight = parseFloat(maxHeightStr.replace("px", "")) || Infinity;
+    const newHeight = Math.min(ta.scrollHeight, maxHeight);
+    ta.style.height = `${newHeight}px`;
+    ta.style.overflow = ta.scrollHeight > maxHeight ? "auto" : "hidden";
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [input, adjustTextareaHeight]);
+
   if (!visible) return null;
 
   return (
     <div className={styles.panel}>
-      <PanelTitle title="Chat" />
+      <div className={styles.titleRow}>
+        <PanelTitle title="Chat" />
+        <button
+          type="button"
+          className={styles.optionsButton}
+          onClick={() => setShowOptions((s) => !s)}
+          aria-expanded={showOptions}
+          aria-label="Chat options"
+        >
+          Options
+        </button>
+      </div>
 
       <div className={styles.chatBox} role="region" aria-label="Chat panel">
+        {showOptions ? (
+          <div className={styles.optionsPanel}>
+            <div className={styles.optionsRow}>
+              <button
+                type="button"
+                className={styles.clearKeyButton}
+                onClick={() => {
+                  setApiKey(null);
+                  try {
+                    void setSave();
+                  } catch (_e) {
+                    void _e;
+                  }
+                  setShowOptions(false);
+                }}
+              >
+                Clear API key
+              </button>
+              <div className={styles.optionsNote}>
+                Clearing the key will disable chat until a new key is saved.
+              </div>
+            </div>
+          </div>
+        ) : null}
         {!apiKey ? (
           <div className={styles.apiKeyRow}>
             <input
@@ -165,9 +250,10 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                       components={{
                         code({ node, inline, className, children, ...props }) {
                           const codeText = String(children).replace(/\n$/, "");
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                           const language = /language-(\w+)/.exec(className || "")?.[1] ?? "";
-
                           return inline ? (
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             <code {...props} className={className}>
                               {children}
                             </code>
@@ -185,7 +271,9 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                                   Copy
                                 </button>
                               </div>
-                              <pre className={className}>
+                              <pre className={
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                                className}>
                                 <code {...props}>
                                   {children}
                                 </code>
@@ -204,19 +292,27 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
           </div>
 
             <div className={styles.inputRow}>
-            <textarea
-              className={styles.input}
-              placeholder="Type a message..."
-              aria-label="Message input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-                disabled={waitingForReply || !apiKey}
-            />
-            <button className={styles.sendButton} aria-label="Send message" onClick={sendMessage} disabled={waitingForReply || !apiKey}>
-              Send
-            </button>
-          </div>
+              <div
+                className={styles.inputWrapper}
+              >
+                <textarea
+                  ref={inputRef}
+                  className={styles.input}
+                  placeholder="Type a message..."
+                  aria-label="Message input"
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    adjustTextareaHeight(e.target);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  disabled={waitingForReply || !apiKey}
+                />
+              </div>
+              <button className={styles.sendButton} aria-label="Send message" onClick={sendMessage} disabled={waitingForReply || !apiKey}>
+                Send
+              </button>
+            </div>
         </div>
       </div>
     </div>

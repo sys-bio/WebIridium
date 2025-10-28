@@ -16,6 +16,8 @@ export interface SavedDataV1 {
     variableSettingss: Record<string, VariableSettings>;
     graphSettings: GraphSettings;
     history: HistoryRecord[];
+    // optional API key persisted with the workspace
+    apiKey?: string | null;
   };
 }
 
