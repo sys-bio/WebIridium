@@ -243,7 +243,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                 <div className={styles.messageBubble + (m.thinking ? ` ${styles.thinkingBubble}` : "") }>
                   {m.thinking ? (
                     <PulseLoader size="8px" spacing="6px" />
-                  ) : (
+                  ) : m.role === "llm" ? (
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeSanitize]}
@@ -285,6 +285,8 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                     >
                       {m.text}
                     </ReactMarkdown>
+                  ) : (
+                    <div className={styles.plainText}>{m.text}</div>
                   )}
                 </div>
               </div>

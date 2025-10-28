@@ -170,6 +170,13 @@
   background: var(--color-button-bg-hover);
 }
 
+.plainText {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-layer1-fg);
+  font-size: var(--font-size-medium);
+}
+
 .inputRow {
   display: flex;
   gap: var(--spacing-2);
