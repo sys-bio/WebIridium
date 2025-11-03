@@ -33,7 +33,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   const [apiKeyInput, setApiKeyInput] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  const requestInFlightRef = useRef(false);
   const setSave = useSetAtom(saveAtom);
 
   useEffect(() => {
@@ -97,21 +96,14 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       thinking: true,
     };
 
-    // prevent duplicate requests in the same tick (e.g., double click or double enter)
-    if (requestInFlightRef.current) return;
-
     // append placeholder and clear input immediately
     const newMessages = [...messages, userMsg, llmPlaceholder];
     setMessages(newMessages);
     setInput("");
     // reset inline height so textarea returns to default after send
     if (inputRef.current) inputRef.current.style.height = "";
-    // mark waiting to block duplicate sends
     setWaitingForReply(true);
-    // mark request immediately so further calls are blocked synchronously
-    requestInFlightRef.current = true;
 
-    // perform the async call outside of state updater to avoid accidental double-invokes
     try {
       const convo = newMessages
         .filter((m) => !m.thinking)
@@ -158,7 +150,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       );
     } finally {
       setWaitingForReply(false);
-      requestInFlightRef.current = false;
     }
   };
 
