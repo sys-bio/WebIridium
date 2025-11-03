@@ -42,7 +42,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     }
   }, [messages]);
 
-  const saveApiKey = useCallback(() => {
+  const saveApiKey = () => {
     // set the atom and trigger the global save flow which persists via commitSavedData
     if (apiKeyInput) {
       setApiKey(apiKeyInput);
@@ -56,7 +56,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     } catch (_e) {
       void _e;
     }
-  }, [apiKeyInput, setApiKey, setSave]);
+  };
 
   // load stored API key from the saved workspace on mount
   useEffect(() => {
@@ -173,8 +173,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     }
   };
 
-  const adjustTextareaHeight = useCallback(
-    (el?: HTMLTextAreaElement | null) => {
+  const adjustTextareaHeight = (el?: HTMLTextAreaElement | null) => {
       const ta = el ?? inputRef.current;
       if (!ta) return;
       ta.style.height = "auto";
@@ -187,9 +186,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       const newHeight = Math.min(ta.scrollHeight, maxHeight);
       ta.style.height = `${newHeight}px`;
       ta.style.overflow = ta.scrollHeight > maxHeight ? "auto" : "hidden";
-    },
-    [],
-  );
+  }
 
   useEffect(() => {
     adjustTextareaHeight();
