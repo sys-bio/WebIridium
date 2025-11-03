@@ -18,6 +18,7 @@ import {
 } from "@/globals/simulation";
 import { readShareUrlFragment } from "@/features/share";
 import { updateAllHistoryAtom } from "@/globals/history";
+import { apiKeyAtom } from "@/globals/chat";
 
 // simulation from share link will not be run if they use more number of points
 // than this.
@@ -39,6 +40,7 @@ const Initialize = ({
   const updateAllHistory = useSetAtom(updateAllHistoryAtom);
   const setGraphSettings = useSetAtom(graphSettingsAtom);
   const setVariableSettingss = useSetAtom(variableSettingssAtom);
+  const setApiKey = useSetAtom(apiKeyAtom);
 
   useEffect(() => {
     if (!didInitialLoadRef.current) {
@@ -58,6 +60,7 @@ const Initialize = ({
           updateAllHistory(savedData.workspace.history);
           setVariableSettingss(savedData.workspace.variableSettingss);
           setGraphSettings(savedData.workspace.graphSettings);
+          setApiKey(savedData.workspace.apiKey ?? null);
         }
 
         const result = await readShareUrlFragment(
@@ -114,6 +117,7 @@ const Initialize = ({
     setEditorFontSize,
     setVariableSettingss,
     updateAllHistory,
+    setApiKey,
   ]);
 
   return null;

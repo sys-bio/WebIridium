@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { saveAtom } from "@/globals/saving";
-import { requestSavedData } from "@/features/saving";
 import styles from "./ChatPanel.module.css";
 import PanelTitle from "../components/PanelTitle";
 import PulseLoader from "../components/PulseLoader";
@@ -28,7 +27,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   const [input, setInput] = useState("");
   const [waitingForReply, setWaitingForReply] = useState(false);
 
-  // Use the shared apiKeyAtom so saving and other globals can operate on it.
   const [apiKey, setApiKey] = useAtom(apiKeyAtom);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
@@ -57,23 +55,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       void _e;
     }
   };
-
-  // load stored API key from the saved workspace on mount
-  useEffect(() => {
-    let mounted = true;
-    void (async () => {
-      try {
-        const data = await requestSavedData();
-        const key = data?.workspace?.apiKey ?? null;
-        if (mounted && key) setApiKey(key);
-      } catch (_e) {
-        void _e;
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [setApiKey]);
 
   const [showOptions, setShowOptions] = useState(false);
 
@@ -123,7 +104,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
           input: convo,
           max_output_tokens: 1024,
           instructions:
-            "You are a biology scientist that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony",
+            "You are a systems biologist that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony",
         }),
       });
 
