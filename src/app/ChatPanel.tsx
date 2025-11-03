@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAtom, useSetAtom } from "jotai";
-import { apiKeyAtom, saveAtom } from "@/globals/saving";
+import { saveAtom } from "@/globals/saving";
 import { requestSavedData } from "@/features/saving";
 import styles from "./ChatPanel.module.css";
 import PanelTitle from "../components/PanelTitle";
@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 import type { OpenAiResponse } from "@/features/chat/API-models/OpenAIModel";
+import { apiKeyAtom } from "@/globals/chat";
 
 export interface ChatPanelProps {
   visible: boolean;
@@ -77,11 +78,13 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
 
   const [showOptions, setShowOptions] = useState(false);
 
-  const sendMessage = useCallback(() => {
+  const sendMessage = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
     if (waitingForReply) return;
     if (!apiKey) return;
+
+    console.log("sending message");
 
     const userMsg: Message = {
       id: String(Date.now()),
@@ -111,86 +114,80 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     requestInFlightRef.current = true;
 
     // perform the async call outside of state updater to avoid accidental double-invokes
-    void (async () => {
-      try {
-        const convo = newMessages
-          .filter((m) => !m.thinking)
-          .map((m) => ({
-            role: m.role === "user" ? "user" : "assistant",
-            content: m.text,
-          }));
+    try {
+      const convo = newMessages
+        .filter((m) => !m.thinking)
+        .map((m) => ({
+          role: m.role === "user" ? "user" : "assistant",
+          content: m.text,
+        }));
 
-        const resp = await fetch("https://api.openai.com/v1/responses", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4.1",
-            input: convo,
-            max_output_tokens: 1024,
-            instructions:
-              "You are a biology scientist that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony",
-          }),
-        });
+      const resp = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4.1",
+          input: convo,
+          max_output_tokens: 1024,
+          instructions:
+            "You are a biology scientist that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony",
+        }),
+      });
 
-        if (!resp.ok) {
-          const body = await resp.text();
-          throw new Error(`OpenAI error ${resp.status}: ${body}`);
-        }
-
-        const data = (await resp.json()) as OpenAiResponse;
-        const reply = data?.output?.[0]?.content[0]?.text ?? "(no response)";
-        setMessages((cur) =>
-          cur.map((m) =>
-            m.id === placeholderId ? { ...m, text: reply, thinking: false } : m,
-          ),
-        );
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        setMessages((cur) =>
-          cur.map((m) =>
-            m.id === placeholderId
-              ? { ...m, text: `Error: ${message}`, thinking: false }
-              : m,
-          ),
-        );
-      } finally {
-        setWaitingForReply(false);
-        requestInFlightRef.current = false;
+      if (!resp.ok) {
+        const body = await resp.text();
+        throw new Error(`OpenAI error ${resp.status}: ${body}`);
       }
-    })();
-  }, [input, waitingForReply, apiKey, messages]);
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (
+      const data = (await resp.json()) as OpenAiResponse;
+      const reply = data?.output?.[0]?.content[0]?.text ?? "(no response)";
+      setMessages((cur) =>
+        cur.map((m) =>
+          m.id === placeholderId ? { ...m, text: reply, thinking: false } : m,
+        ),
+      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setMessages((cur) =>
+        cur.map((m) =>
+          m.id === placeholderId
+            ? { ...m, text: `Error: ${message}`, thinking: false }
+            : m,
+        ),
+      );
+    } finally {
+      setWaitingForReply(false);
+      requestInFlightRef.current = false;
+    }
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = async (
     e,
   ) => {
     if (waitingForReply || !apiKey) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      await sendMessage();
     }
   };
 
-  const adjustTextareaHeight = (el?: HTMLTextAreaElement | null) => {
-      const ta = el ?? inputRef.current;
-      if (!ta) return;
-      ta.style.height = "auto";
-      const wrapper = ta.parentElement;
-      const computedTarget = wrapper
-        ? window.getComputedStyle(wrapper)
-        : window.getComputedStyle(ta);
-      const maxHeightStr = computedTarget.maxHeight || "0px";
-      const maxHeight = parseFloat(maxHeightStr.replace("px", "")) || Infinity;
-      const newHeight = Math.min(ta.scrollHeight, maxHeight);
-      ta.style.height = `${newHeight}px`;
-      ta.style.overflow = ta.scrollHeight > maxHeight ? "auto" : "hidden";
-  }
-
   useEffect(() => {
-    adjustTextareaHeight();
-  }, [input, adjustTextareaHeight]);
+    const ta = inputRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const wrapper = ta.parentElement;
+    const computedTarget = wrapper
+      ? window.getComputedStyle(wrapper)
+      : window.getComputedStyle(ta);
+    const maxHeightStr = computedTarget.maxHeight || "0px";
+    const maxHeight = parseFloat(maxHeightStr.replace("px", "")) || Infinity;
+    const newHeight = Math.min(ta.scrollHeight, maxHeight);
+    ta.style.height = `${newHeight}px`;
+    ta.style.overflow = ta.scrollHeight > maxHeight ? "auto" : "hidden";
+  }, [input]);
 
   if (!visible) return null;
 
@@ -321,14 +318,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                                   Copy
                                 </button>
                               </div>
-                              <pre
-                                className={
-                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                                  className
-                                }
-                              >
-                                <code {...props}>{children}</code>
-                              </pre>
+                              <code {...props}>{children}</code>
                             </div>
                           );
                         },
@@ -354,13 +344,13 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
-                  adjustTextareaHeight(e.target);
                 }}
                 onKeyDown={handleKeyDown}
                 disabled={waitingForReply || !apiKey}
               />
             </div>
             <button
+              id="chat-enter-button"
               className={styles.sendButton}
               aria-label="Send message"
               onClick={sendMessage}

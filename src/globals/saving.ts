@@ -4,8 +4,7 @@ import { editorFontSizeAtom, themeOptionAtom } from "./appearance";
 import { graphSettingsAtom, nameAtom, variableSettingssAtom } from "./settings";
 import { editorContentAtom } from "./model";
 import { historyAtom } from "./history";
-
-export const apiKeyAtom = atom<string | null>(null);
+import { apiKeyAtom } from "./chat";
 
 export const saveAtom = atom(null, async (get, _set): Promise<void> => {
   await commitSavedData({
