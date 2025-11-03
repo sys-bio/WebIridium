@@ -84,8 +84,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     if (waitingForReply) return;
     if (!apiKey) return;
 
-    console.log("sending message");
-
     const userMsg: Message = {
       id: String(Date.now()),
       role: "user",
@@ -222,6 +220,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                   }
                   setShowOptions(false);
                 }}
+                disabled={waitingForReply || !apiKey}
               >
                 Clear API key
               </button>
