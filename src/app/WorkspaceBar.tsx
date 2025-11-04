@@ -107,7 +107,7 @@ export const WorkspaceBar = () => {
 
   const openInput = () => {
     setOpen(true);
-    setTyping("");
+    setTyping(workspaceName);
     setSelectedIndex(0);
   };
 
@@ -212,6 +212,7 @@ export const WorkspaceBar = () => {
           type="text"
           className={styles.input}
           autoFocus
+          onFocus={(e) => e.target.select()}
           value={typing}
           placeholder="Rename your model or search for one"
           onBlur={cancelInput}
