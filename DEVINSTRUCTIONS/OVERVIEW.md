@@ -46,4 +46,5 @@ Please write tests for any changes you make, as much as is reasonable.
 - [global state management](./GLOBALS.md)
 - [styling](./STYLING.md)
 - [simulation + copasi/antimony](./SIMULATION.md)
+- [url](./URL.md)
 - [icons](./ICONS.md)

@@ -1,0 +1,15 @@
+{
+  "short_name": "WebIridium",
+  "name": "WebIridium: biomodels simulator",
+  "description": "simulate biomodels",
+  "icons": [
+    {
+      "src": "/WebIridium/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/WebIridium",
+  "display": "standalone",
+  "background_color": "#000"
+}
