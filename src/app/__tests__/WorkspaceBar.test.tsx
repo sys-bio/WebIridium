@@ -35,6 +35,7 @@ it("should rename the workspace", async () => {
   await clickRename();
 
   const input = screen.getByRole("textbox");
+  await userEvent.clear(input);
   await userEvent.type(input, "new name[Enter]");
 
   expect(input).not.toHaveFocus();
@@ -79,6 +80,7 @@ it("should not rename when name is invalid", async () => {
   await clickRename();
 
   const input = screen.getByRole("textbox");
+  await userEvent.clear(input);
   await userEvent.type(input, "      [Enter]");
 
   expect(input).toHaveFocus();
