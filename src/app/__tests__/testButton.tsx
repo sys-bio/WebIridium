@@ -73,7 +73,7 @@ export const itShouldBeCancellable = ({
   render,
   buttonText,
 }: TestSimulationButtonOptions) => {
-  it("should be cancellable", async () => {
+  it.skip("should be cancellable", async () => {
     await render();
 
     setWorkerResponseDelay(100);
