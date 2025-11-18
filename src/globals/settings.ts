@@ -118,6 +118,25 @@ export const variableSettingssAtom = atom<{ [id: string]: VariableSettings }>(
   {},
 );
 
+/**
+ * Get variable settings for variable with the given name.
+ * If not found, uses fallback settings.
+ */
+export const getVariableSettingsFrom = (
+  variableSettingss: Record<string, VariableSettings>,
+  name: string,
+): VariableSettings => {
+  return (
+    variableSettingss[name] ?? {
+      displayName: name,
+      color: "#777",
+      lineStyle: "solid",
+      visible: true,
+      width: 2.5,
+    }
+  );
+};
+
 export const defaultTimeCourseParameters: EditableTimeCourseParameters = {
   startTime: 0,
   endTime: 20,
