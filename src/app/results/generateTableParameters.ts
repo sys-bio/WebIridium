@@ -1,7 +1,10 @@
 import type { DataTableProps } from "@/components/DataTable";
 
 import type { SimulationResult } from "@/features/simulation/Simulator";
-import type { VariableSettings } from "@/globals/settings";
+import {
+  getVariableSettingsFrom,
+  type VariableSettings,
+} from "@/globals/settings";
 
 import { getColumnsFromResult } from "./getColumnsFromResult";
 import { getParameterScanTitle } from "./getParameterScanTitle";
@@ -21,7 +24,7 @@ export const generateTableParameters = (
   const dataTableColumns = [];
   const parameterSettings =
     result.type === "parameterScan"
-      ? variableSettingss[result.parameter]
+      ? getVariableSettingsFrom(variableSettingss, result.parameter)
       : null;
 
   const independentVariableColumn = columns.find(
@@ -29,7 +32,10 @@ export const generateTableParameters = (
   );
 
   if (independentVariableColumn) {
-    const settings = variableSettingss[independentVariableName];
+    const settings = getVariableSettingsFrom(
+      variableSettingss,
+      independentVariableName,
+    );
     dataTableColumns.push({
       title: settings.displayName,
       values: independentVariableColumn.values,
@@ -38,7 +44,7 @@ export const generateTableParameters = (
 
   for (const { variableName, values, parameterValue } of columns) {
     if (variableName !== independentVariableName) {
-      const settings = variableSettingss[variableName];
+      const settings = getVariableSettingsFrom(variableSettingss, variableName);
       if (!settings.visible) continue;
 
       const title =
