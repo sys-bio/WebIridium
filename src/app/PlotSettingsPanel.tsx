@@ -247,6 +247,14 @@ const PlotSettingsPanel = ({ onClose }: PlotSettingsPanelProps) => {
               )}
               onChange={(sp) => setPalette(sp as Palette)}
             />
+            <NumericSliderProperty
+              name="Global Width"
+              value={graphSettings.globalWidth}
+              min={0.1}
+              max={20}
+              step={0.1}
+              onChange={handleChangeFor("globalWidth")}
+            />
             {palette === "Custom" && <UncontrolledVariableList />}
           </PropertyList>
         </PropertyAccordionItem>

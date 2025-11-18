@@ -78,6 +78,8 @@ export interface GraphSettings {
   borderColor: string;
   borderThickness: number;
 
+  globalWidth: number;
+
   isAutoscaledX: boolean;
   minX: number;
   maxX: number;
@@ -153,6 +155,8 @@ export const defaultGraphSettings: GraphSettings = {
   includeBorder: true,
   borderColor: "#000000",
   borderThickness: 0.5,
+
+  globalWidth: 1,
 
   isAutoscaledX: true,
   minX: 0,
