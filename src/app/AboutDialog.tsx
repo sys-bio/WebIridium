@@ -21,6 +21,8 @@ const AboutDialog = ({ onClose }: AboutDialogProps) => {
         <br />
         Antimony: 2.15.0
         <br />
+        libSBML: 5.20.4
+        <br />
         COPASI: 4.44
         <br />
         libsbmlsim: 1.4.0
