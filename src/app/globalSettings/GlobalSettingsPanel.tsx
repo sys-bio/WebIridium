@@ -1,12 +1,17 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
-import { editorFontSizeAtom, themeOptionAtom } from "@/globals/appearance";
+import {
+  editorFontSizeAtom,
+  themeOptionAtom,
+  type ThemeOption,
+} from "@/globals/appearance";
 import {
   getSimulatorName,
   SIMULATOR_LIST,
   simulatorAtom,
   updateSimulatorAtom,
 } from "@/globals/simulator";
+import { saveAtom } from "@/globals/saving";
 
 import styles from "./globalSettings.module.css";
 import PropertyList from "@/components/property-list/PropertyList";
@@ -32,6 +37,7 @@ for (const simulator of SIMULATOR_LIST) {
 const GlobalSettingsPanel = () => {
   const [themeOption, setThemeOption] = useAtom(themeOptionAtom);
   const [editorFontSize, setEditorFontSize] = useAtom(editorFontSizeAtom);
+  const save = useSetAtom(saveAtom);
   const simulator = useAtomValue(simulatorAtom);
   const updateSimulator = useSetAtom(updateSimulatorAtom);
 
@@ -44,14 +50,20 @@ const GlobalSettingsPanel = () => {
             name="Theme"
             options={themeOptions}
             value={themeOption}
-            onChange={setThemeOption as (theme: string) => void}
+            onChange={(newTheme) => {
+              setThemeOption(newTheme as ThemeOption);
+              void save();
+            }}
           />
           <NumericSliderProperty
             name="Editor Font Size"
             min={8}
             max={32}
             value={editorFontSize}
-            onChange={setEditorFontSize}
+            onChange={(newSize) => {
+              setEditorFontSize(newSize);
+              void save();
+            }}
           />
 
           <PropertyHeading>Simulation</PropertyHeading>
@@ -59,7 +71,10 @@ const GlobalSettingsPanel = () => {
             name="Simulator"
             options={simulatorOptions}
             value={getSimulatorName(simulator)}
-            onChange={(name) => updateSimulator(name)}
+            onChange={(name) => {
+              updateSimulator(name);
+              void save();
+            }}
           />
         </PropertyList>
       </div>

@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 
 import {
@@ -11,6 +11,7 @@ import {
   type LegendSettings,
 } from "@/globals/settings";
 import { defaultXAxisTitleAtom, defaultYAxisTitleAtom } from "@/globals/plot";
+import { saveAtom } from "@/globals/saving";
 
 import styles from "./PlotSettingsPanel.module.css";
 import buttonStyles from "@/components/Button.module.css";
@@ -43,6 +44,7 @@ export interface PlotSettingsPanelProps {
 }
 
 const PlotSettingsPanel = ({ onClose }: PlotSettingsPanelProps) => {
+  const save = useSetAtom(saveAtom);
   const [graphSettings, setGraphSettings] = useAtom(graphSettingsAtom);
   const [palette, setPalette] = useAtom(paletteAtom);
 
@@ -62,6 +64,7 @@ const PlotSettingsPanel = ({ onClose }: PlotSettingsPanelProps) => {
   ): ((newValue: unknown) => void) => {
     return (newValue) => {
       setGraphSettings({ ...graphSettings, [setting]: newValue });
+      void save();
     };
   };
 
@@ -76,6 +79,7 @@ const PlotSettingsPanel = ({ onClose }: PlotSettingsPanelProps) => {
           [setting]: newValue,
         },
       });
+      void save();
     };
   };
 
@@ -90,6 +94,7 @@ const PlotSettingsPanel = ({ onClose }: PlotSettingsPanelProps) => {
           [setting]: newValue,
         },
       });
+      void save();
     };
   };
 
@@ -104,6 +109,7 @@ const PlotSettingsPanel = ({ onClose }: PlotSettingsPanelProps) => {
           [setting]: newValue,
         },
       });
+      void save();
     };
   };
 
