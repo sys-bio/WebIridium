@@ -202,10 +202,7 @@ const AppMenubar = () => {
             name="Antimony Reference"
             href="https://tellurium.readthedocs.io/en/latest/antimony.html"
           />
-          <MenubarItem
-            name="About Web Iridium"
-            onSelect={() => setAboutOpen(true)}
-          />
+          <MenubarItem name="About" onSelect={() => setAboutOpen(true)} />
         </MenubarMenu>
       </MenubarRoot>
 
