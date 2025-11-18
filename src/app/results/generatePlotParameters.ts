@@ -148,7 +148,7 @@ export const generatePlotParameters = (
         data: values.map((v, i) => [independentVariableColumn.values[i], v]),
         type: "line",
         lineStyle: {
-          width: settings.width,
+          width: settings.width * graphSettings.globalWidth,
           color: finalColor,
           type: DASH_ARRAYS[settings.lineStyle],
         },
