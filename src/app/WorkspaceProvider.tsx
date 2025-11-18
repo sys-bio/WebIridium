@@ -63,23 +63,26 @@ const Initialize = ({
           setApiKey(savedData.workspace.apiKey ?? null);
         }
 
-        const result = await readShareUrlFragment(
+        const shareResult = await readShareUrlFragment(
           decodeURIComponent(location.hash.slice(1)),
         );
 
-        if (result.type === "success") {
-          if (
-            await setModel({
-              name: result.data.name,
-              content: result.data.code,
-            })
-          ) {
-            if (result.data.simulation.type === "timeCourse") {
-              setTimeCourseParameters(result.data.simulation.parameters);
-              if (
-                result.data.simulation.parameters.numberOfPoints <
-                UNREASONABLE_NUMBER_OF_POINTS
-              ) {
+        // share data was found in the url, load it
+        if (shareResult.type === "success") {
+          const setSuccess = await setModel({
+            name: shareResult.data.name,
+            content: shareResult.data.code,
+            resetCurrentResult: false,
+          });
+
+          if (setSuccess) {
+            if (shareResult.data.simulation.type === "timeCourse") {
+              const isReasonable =
+                shareResult.data.simulation.parameters.numberOfPoints <
+                UNREASONABLE_NUMBER_OF_POINTS;
+              setTimeCourseParameters(shareResult.data.simulation.parameters);
+
+              if (isReasonable) {
                 await simulateTimeCourse();
               }
             } else {
@@ -90,11 +93,13 @@ const Initialize = ({
           await setModel({
             name: savedData.workspace.name,
             content: savedData.workspace.content,
+            resetCurrentResult: false,
           });
         } else {
           await setModel({
             name: "Starter Model",
             content: defaultModel,
+            resetCurrentResult: false,
           });
         }
       };
@@ -104,6 +109,7 @@ const Initialize = ({
       void setModel({
         name: "Starter Model",
         content: defaultModel,
+        resetCurrentResult: false,
       });
     }
   }, [
