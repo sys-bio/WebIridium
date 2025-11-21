@@ -66,7 +66,14 @@ export const requestSavedData = (): Promise<SavedDataV1 | null> => {
       };
 
       getRequest.onsuccess = (event) => {
-        resolve((event.target as IDBRequest).result as SavedDataV1);
+        const data = (event.target as IDBRequest).result as SavedDataV1;
+
+        // simple dumb migration for now
+        if (data.workspace.graphSettings.globalWidth === undefined) {
+          data.workspace.graphSettings.globalWidth = 1;
+        }
+
+        resolve(data);
       };
     };
   });
