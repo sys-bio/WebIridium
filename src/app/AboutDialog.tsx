@@ -19,7 +19,7 @@ const AboutDialog = ({ onClose }: AboutDialogProps) => {
         Copyright: 2025
         <br />
         <br />
-        Antimony: 2.15.0
+        Antimony: 3.1.1
         <br />
         libSBML: 5.20.4
         <br />

@@ -1,3 +1,4 @@
+
 /**
  * @class Result
  * Class holds result of an action. Holds the result, a string,
