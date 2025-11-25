@@ -237,7 +237,7 @@ export const updateEditorContentAtom = atom(
       !newVariables.some(
         (v) =>
           v.type === "settable" &&
-          v.setName === parameterScanOptions.varyingParameter,
+          v.name === parameterScanOptions.varyingParameter,
       )
     ) {
       const firstAvailableParameter = newVariables.find(
