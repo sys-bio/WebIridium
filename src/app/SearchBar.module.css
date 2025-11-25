@@ -143,13 +143,11 @@
 
 .biomodel-synopsis {
   color: var(--color-layer3-fg-dim);
-  /* TODO: make this even smaller */
   font-size: var(--font-size-small);
 }
 
 .biomodel-extra {
   color: var(--color-layer3-fg-dim);
-  /* TODO: make this even smaller */
   font-size: var(--font-size-small);
   font-style: italic;
   padding: 0;
