@@ -29,3 +29,10 @@
   border: var(--border-layer2);
   padding: var(--spacing-2) var(--spacing-1);
 }
+
+.dataset-actions {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-2);
+  justify-content: flex-end;
+}

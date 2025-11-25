@@ -1,4 +1,5 @@
 import styles from "./overlays.module.css";
+import buttonStyles from "@/components/Button.module.css";
 
 import type { Dataset, DatasetVariable } from "@/globals/overlays";
 
@@ -9,6 +10,9 @@ import PropertyList from "@/components/property-list/PropertyList";
 import SelectProperty from "@/components/property-list/SelectProperty";
 import BooleanProperty from "@/components/property-list/BooleanProperty";
 import NumericSliderProperty from "@/components/property-list/NumericSliderProperty";
+
+import EyeIcon from "@/assets/icons/EyeIcon.svg?react";
+import ClosedEyeIcon from "@/assets/icons/ClosedEyeIcon.svg?react";
 
 export interface DatasetItemProps {
   dataset: Dataset;
@@ -23,6 +27,36 @@ const DatasetItem = ({ dataset, onDatasetChange }: DatasetItemProps) => {
         ...dataset.variables,
         [newVariable.name]: newVariable,
       },
+    });
+  };
+
+  const hideAll = () => {
+    const newVariables: Record<string, DatasetVariable> = {};
+    for (const [name, variable] of Object.entries(dataset.variables)) {
+      newVariables[name] = {
+        ...variable,
+        visible: false,
+      };
+    }
+
+    onDatasetChange({
+      ...dataset,
+      variables: newVariables,
+    });
+  };
+
+  const showAll = () => {
+    const newVariables: Record<string, DatasetVariable> = {};
+    for (const [name, variable] of Object.entries(dataset.variables)) {
+      newVariables[name] = {
+        ...variable,
+        visible: true,
+      };
+    }
+
+    onDatasetChange({
+      ...dataset,
+      variables: newVariables,
     });
   };
 
@@ -79,6 +113,17 @@ const DatasetItem = ({ dataset, onDatasetChange }: DatasetItemProps) => {
               onChange={handleVariableChange}
             />
           ))}
+        </div>
+
+        <div className={styles.datasetActions}>
+          <button className={buttonStyles.default} onClick={showAll}>
+            <EyeIcon width="1em" height="1em" />
+            Show All
+          </button>
+          <button className={buttonStyles.default} onClick={hideAll}>
+            <ClosedEyeIcon width="1em" height="1em" />
+            Hide All
+          </button>
         </div>
       </div>
     </PropertyAccordionItem>
