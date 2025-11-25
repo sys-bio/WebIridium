@@ -42,6 +42,7 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
+
 const isNameValid = (name: string): boolean => {
   return name.trim().length > 0;
 };
@@ -399,7 +400,6 @@ const AutocompleteBiomodelItem = ({
         <button
           ref={buttonRef}
           className={styles.autocompleteBiomodelButton}
-          // have to use pointer down because on safari, onClick triggers after the blur event which is too late
           onClick={() => onClick(item)}
         >
           <strong className={styles.biomodelName}>{item.info.name}</strong>
