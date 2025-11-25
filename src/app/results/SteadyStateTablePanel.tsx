@@ -14,7 +14,9 @@ import { type SteadyStateResultItem } from "@/features/simulation/Simulator";
 import IconButton from "@/components/IconButton";
 
 import DownloadIcon from "@/assets/icons/DownloadIcon.svg?react";
+import ChevronDownIcon from "@/assets/icons/ChevronDownIcon.svg?react";
 import { nameAtom } from "@/globals/settings";
+import { useState } from "react";
 
 const decimalPlacesAtom = atom(2);
 
@@ -27,6 +29,7 @@ const Section = ({
 }) => {
   const modelName = useAtomValue(nameAtom);
   const decimalPlaces = useAtomValue(decimalPlacesAtom);
+  const [open, setOpen] = useState(true);
 
   const handleDownload = () => {
     const csv = convertColumnsToCsv(columns);
@@ -34,15 +37,33 @@ const Section = ({
     promptDownloadString(`${modelName} Steady State ${title}`, csv, "text/csv");
   };
 
+  const toggleOpen = () => {
+    setOpen((open) => !open);
+  };
+
+  // TODO: make more accessible for screenreaders
   return (
     <div className={styles.steadyStateSection}>
-      <h2 className={styles.steadyStateSectionTitle}>
-        {title}
+      <h2 className={styles.steadyStateSectionTitleContainer}>
+        <ChevronDownIcon
+          className={styles.steadyStateSectionTitleChevron}
+          width="1em"
+          height="1em"
+          data-open={open}
+        />
+        <button
+          className={styles.steadyStateSectionTrigger}
+          onClick={toggleOpen}
+        >
+          {title}
+        </button>
+
         <IconButton label="Download" onClick={handleDownload}>
           <DownloadIcon width="0.75em" height="0.75em" />
         </IconButton>
       </h2>
-      <DataTable columns={columns} decimalPlaces={decimalPlaces} />
+
+      {open && <DataTable columns={columns} decimalPlaces={decimalPlaces} />}
     </div>
   );
 };

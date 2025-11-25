@@ -85,10 +85,32 @@
   overflow-y: auto;
 }
 
-.steady-state-section-title {
+.steady-state-section-title-container {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.steady-state-section-title-chevron {
+  color: var(--color-layer1-fg-dim);
+  &[data-open="false"] {
+    transform: rotate(-90deg);
+  }
+}
+
+.steady-state-section-trigger {
+  flex-grow: 1;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: inherit;
+  font-weight: bold;
+  padding: 0;
+
+  &:focus-visible {
+    outline: var(--outline-focused);
+  }
 }
 
 .steady-state-section {
