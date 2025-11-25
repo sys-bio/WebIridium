@@ -207,10 +207,12 @@ export const updateEditorContentAtom = atom(
       }
     }
 
+    // disable this for now as per steve's request
+    //
     // Sort new variables in alphabetical order. Time always comes first.
-    newVariables = newVariables.sort((a, b) =>
-      a.defaultDisplayName.localeCompare(b.defaultDisplayName),
-    );
+    // newVariables = newVariables.sort((a, b) =>
+    //   a.defaultDisplayName.localeCompare(b.defaultDisplayName),
+    // );
 
     const independentVariable = get(independentVariableAtom);
     const parameterScanOptions = get(parameterScanOptionsAtom);
