@@ -1,4 +1,4 @@
-<img width="594" height="128" alt="webiridium banner" src="https://github.com/user-attachments/assets/667ba018-9624-46ab-bf9c-e0a214ae4a97" />
+<img width="593" height="128" alt="webiridum banner2" src="https://github.com/user-attachments/assets/b6579ef9-b30a-4980-bddc-6e3984d19a2b" />
 
 
 [![Check formatting, linting, and tests](https://github.com/sys-bio/WebIridium/actions/workflows/check.yml/badge.svg)](https://github.com/sys-bio/WebIridium/actions/workflows/check.yml)
