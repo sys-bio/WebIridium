@@ -1,27 +1,48 @@
 import { atom, useAtom, useAtomValue } from "jotai";
 
+import { promptDownloadString } from "@/features/download";
+import { convertColumnsToCsv } from "@/features/csv";
+
 import { simulationResultAtom } from "@/globals/simulation";
 
 import styles from "./results.module.css";
 
-import DataTable from "@/components/DataTable";
+import DataTable, { type DataTableProps } from "@/components/DataTable";
 import NumericSliderProperty from "@/components/property-list/NumericSliderProperty";
 
 import { type SteadyStateResultItem } from "@/features/simulation/Simulator";
+import IconButton from "@/components/IconButton";
+
+import DownloadIcon from "@/assets/icons/DownloadIcon.svg?react";
+import { nameAtom } from "@/globals/settings";
 
 const decimalPlacesAtom = atom(2);
 
 const Section = ({
   title,
-  children,
+  columns,
 }: {
-  title?: string;
-  children: React.ReactNode;
+  title: string;
+  columns: DataTableProps["columns"];
 }) => {
+  const modelName = useAtomValue(nameAtom);
+  const decimalPlaces = useAtomValue(decimalPlacesAtom);
+
+  const handleDownload = () => {
+    const csv = convertColumnsToCsv(columns);
+
+    promptDownloadString(`${modelName} Steady State ${title}`, csv, "text/csv");
+  };
+
   return (
     <div className={styles.steadyStateSection}>
-      {title && <h2>{title}</h2>}
-      {children}
+      <h2 className={styles.steadyStateSectionTitle}>
+        {title}
+        <IconButton label="Download" onClick={handleDownload}>
+          <DownloadIcon width="0.75em" height="0.75em" />
+        </IconButton>
+      </h2>
+      <DataTable columns={columns} decimalPlaces={decimalPlaces} />
     </div>
   );
 };
@@ -93,39 +114,15 @@ const SteadyStateResultPanel = () => {
           step={1}
         />
         <p>Value: {simulationResults.value}</p>
-        <Section>
-          <DataTable
-            columns={concentrationColumns}
-            decimalPlaces={decimalPlaces}
-          />
-        </Section>
-        <Section title="Eigenvalues">
-          <DataTable
-            columns={eigenvalueColumns}
-            decimalPlaces={decimalPlaces}
-          />
-        </Section>
-        <Section title="Jacobian">
-          <DataTable columns={jacobianColumns} decimalPlaces={decimalPlaces} />
-        </Section>
-        <Section title="Flux Control">
-          <DataTable
-            columns={fluxControlColumns}
-            decimalPlaces={decimalPlaces}
-          />
-        </Section>
-        <Section title="Concentration Control">
-          <DataTable
-            columns={concentrationControlColumns}
-            decimalPlaces={decimalPlaces}
-          />
-        </Section>
-        <Section title="Elasticities">
-          <DataTable
-            columns={elasticitiesColumns}
-            decimalPlaces={decimalPlaces}
-          />
-        </Section>
+        <Section title="Concentrations" columns={concentrationColumns} />
+        <Section title="Eigenvalues" columns={eigenvalueColumns} />
+        <Section title="Jacobian" columns={jacobianColumns} />
+        <Section title="Flux Control" columns={fluxControlColumns} />
+        <Section
+          title="Concentration Control"
+          columns={concentrationControlColumns}
+        />
+        <Section title="Elasticities" columns={elasticitiesColumns} />
       </div>
     </div>
   );

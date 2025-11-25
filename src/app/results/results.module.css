@@ -85,6 +85,12 @@
   overflow-y: auto;
 }
 
+.steady-state-section-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 .steady-state-section {
   & > h2 {
     font-size: var(--font-size-big);

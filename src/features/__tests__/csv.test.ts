@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { escapeCsvCell } from "../csv";
+import { convertColumnsToCsv, escapeCsvCell } from "../csv";
 
 describe("escaping", () => {
   it("should not escape stuff that should need to be escaped", () => {
@@ -31,5 +31,33 @@ describe("escaping", () => {
 
   it("should escape commas", () => {
     expect(escapeCsvCell("hello, world")).toEqual('"hello, world"');
+  });
+});
+
+describe("convert columns to csv", () => {
+  it("should work", () => {
+    const columns = [
+      { title: "test", values: [1, 2, 3, 4] },
+      { title: "test2", values: [2, 3, 4, 5] },
+    ];
+
+    expect(convertColumnsToCsv(columns)).toEqual(`test,test2
+1,2
+2,3
+3,4
+4,5`);
+  });
+
+  it("should escape cells", () => {
+    const columns = [
+      { title: "test", values: [1, 2, 3, 4] },
+      { title: "test2", values: [2, ",", 4, 5] },
+    ];
+
+    expect(convertColumnsToCsv(columns)).toEqual(`test,test2
+1,2
+2,","
+3,4
+4,5`);
   });
 });
