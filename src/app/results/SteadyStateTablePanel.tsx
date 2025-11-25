@@ -45,16 +45,16 @@ const Section = ({
   return (
     <div className={styles.steadyStateSection}>
       <h2 className={styles.steadyStateSectionTitleContainer}>
-        <ChevronDownIcon
-          className={styles.steadyStateSectionTitleChevron}
-          width="1em"
-          height="1em"
-          data-open={open}
-        />
         <button
           className={styles.steadyStateSectionTrigger}
           onClick={toggleOpen}
         >
+          <ChevronDownIcon
+            className={styles.steadyStateSectionTitleChevron}
+            width="1em"
+            height="1em"
+            data-open={open}
+          />
           {title}
         </button>
 
