@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useState, useEffect, useRef } from "react";
 import { useAtom } from "jotai";
 
-import styles from "./WorkspaceBar.module.css";
+import styles from "./SearchBar.module.css";
 import buttonStyles from "@/components/Button.module.css";
 
 import { convertSbmlToAntimony } from "@/features/antimony";
@@ -25,15 +25,44 @@ import { setModelAtom } from "@/globals/model";
 type AutocompleteItems = { [group: string]: AutocompleteItem[] };
 
 const ACTIONS_GROUP_NAME = "Actions";
-const AUTOCOMPLETE_POPUP_ID = "workspaceBarAutocomplete";
+const AUTOCOMPLETE_POPUP_ID = "searchBarAutocomplete";
 const BIOMODELS_SEARCH_LIMIT = 25;
 
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 const isNameValid = (name: string): boolean => {
   return name.trim().length > 0;
 };
 
+/**
+ * Prettifies a date in the format of "2020-1" into "Jan 2020"
+ */
+const prettifyDate = (date: string): string => {
+  const match = /(\d+)-(\d+)/.exec(date);
+  if (match) {
+    return `${MONTHS[+match[2]]} ${match[1]}`;
+  } else {
+    return date;
+  }
+};
+
 const getFirstSentence = (synopysis: string): string =>
   synopysis.slice(0, synopysis.indexOf(".") + 1);
+
+const getBiomodelLink = (info: BiomodelInfo): string =>
+  `https://www.ebi.ac.uk/biomodels/${info.id}`;
 
 const getSelectedAutocompleteItemFromIndex = (
   items: AutocompleteItems,
@@ -69,7 +98,7 @@ const incrementIndexFromItems = (
   return (index + 1) % flattenedItems.length;
 };
 
-export const WorkspaceBar = () => {
+export const SearchBar = () => {
   const { toast } = useToast();
   const [workspaceName, setWorkspaceName] = useAtom(nameAtom);
   const setModel = useSetAtom(setModelAtom);
@@ -208,7 +237,7 @@ export const WorkspaceBar = () => {
       <div className={clsx(styles.main, styles.active)}>
         <SearchIcon className={styles.searchIcon} width="1em" height="1em" />
         <input
-          id="workspaceBar"
+          id="searchBar"
           type="text"
           className={styles.input}
           autoFocus
@@ -259,26 +288,19 @@ const AutocompletePopup = ({
   const isEmpty = Object.values(items).every(
     (groupItems) => groupItems.length === 0,
   );
-  if (isEmpty) {
-    return (
-      <ul
-        id={id}
-        ref={ref as React.RefObject<HTMLUListElement>}
-        className={styles.autocompletePopup}
-        role="listbox"
-      >
+  return (
+    <ul
+      id={id}
+      ref={ref as React.RefObject<HTMLUListElement>}
+      className={styles.autocompletePopup}
+      /* prevent unfocusing when clicking in this area because it will disappear if that happens */
+      onPointerDown={(e) => e.preventDefault()}
+      role="listbox"
+    >
+      {isEmpty ? (
         <p className={styles.noResults}>No results.</p>
-      </ul>
-    );
-  } else {
-    return (
-      <ul
-        id={id}
-        ref={ref as React.RefObject<HTMLUListElement>}
-        className={styles.autocompletePopup}
-        role="listbox"
-      >
-        {Object.entries(items).map(([group, groupItems]) =>
+      ) : (
+        Object.entries(items).map(([group, groupItems]) =>
           groupItems.length === 0 ? null : (
             <div key={group} className={styles.autocompleteGroup}>
               {/* special case for action group, don't show the title */}
@@ -306,10 +328,10 @@ const AutocompletePopup = ({
               )}
             </div>
           ),
-        )}
-      </ul>
-    );
-  }
+        )
+      )}
+    </ul>
+  );
 };
 
 const useFocusOnSelected = (
@@ -366,29 +388,36 @@ const AutocompleteBiomodelItem = ({
 
   return (
     <li>
-      <button
-        ref={buttonRef}
-        className={buttonStyles.ghost}
+      <div
+        className={clsx(
+          styles.autocompleteItem,
+          styles.autocompleteBiomodelItem,
+          buttonStyles.ghost,
+        )}
         data-active={selected}
-        // have to use pointer down because on safari, onClick triggers after the blur event which is too late
-        onPointerDown={() => onClick(item)}
       >
-        <div
-          className={clsx(
-            styles.autocompleteItem,
-            styles.autocompleteBiomodelItem,
-          )}
+        <button
+          ref={buttonRef}
+          className={styles.autocompleteBiomodelButton}
+          // have to use pointer down because on safari, onClick triggers after the blur event which is too late
+          onClick={() => onClick(item)}
         >
           <strong className={styles.biomodelName}>{item.info.name}</strong>
+          <span className={styles.biomodelCitation}>
+            <span>{item.info.authors.join(", ")}</span>
+            <span> - {item.info.journal}</span>
+            <span>, {prettifyDate(item.info.date)}</span>
+          </span>
           <span className={styles.biomodelSynopsis}>
             {getFirstSentence(item.info.synopsis)}
           </span>
-          <span className={styles.biomodelExtra}>
-            {item.info.id} | Authors: {item.info.authors.join(", ")} | Date:{" "}
-            {item.info.date} | Journal: {item.info.journal}
-          </span>
-        </div>
-      </button>
+        </button>
+        <span className={styles.biomodelExtra}>
+          <a href={getBiomodelLink(item.info)} target="_blank">
+            {getBiomodelLink(item.info)}
+          </a>
+        </span>
+      </div>
     </li>
   );
 };
@@ -401,4 +430,4 @@ const AutocompleteLoadingItem = () => {
   );
 };
 
-export default WorkspaceBar;
+export default SearchBar;

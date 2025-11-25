@@ -23,7 +23,7 @@ import {
 } from "@/globals/layout";
 
 import { useToast } from "@/components/Toast";
-import WorkspaceBar from "./WorkspaceBar";
+import SearchBar from "./SearchBar";
 import ShareButton from "./sharing/ShareButton";
 import GlobalSettingsDialog from "./globalSettings/GlobalSettingsDialog";
 import HelpDialog from "./HelpDialog";
@@ -211,7 +211,7 @@ const AppMenubar = () => {
       </MenubarRoot>
 
       <div className={styles.menubarCenter}>
-        <WorkspaceBar />
+        <SearchBar />
       </div>
 
       <div className={styles.menubarRight}>

@@ -107,32 +107,53 @@
   padding-right: var(--spacing-2);
 }
 
-.autocomplete-biomodel-item {
-  display: flex;
-  flex-direction: column;
-}
-
 .autocomplete-loading-item {
   color: var(--color-layer3-fg-dim);
   padding: var(--spacing-2);
 }
 
+.autocomplete-biomodel-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--spacing-2) !important;
+  align-items: start !important;
+}
+
+.autocomplete-biomodel-button {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  text-align: left;
+
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
 .biomodel-name {
+  font-size: var(--font-size-medium);
   font-weight: normal;
+}
+
+.biomodel-citation {
+  color: color-mix(in oklch, var(--color-layer3-fg), var(--color-accent) 60%);
+  font-size: var(--font-size-small);
 }
 
 .biomodel-synopsis {
   color: var(--color-layer3-fg-dim);
   /* TODO: make this even smaller */
   font-size: var(--font-size-small);
-  font-style: italic;
-  padding-block: var(--spacing-2);
 }
 
 .biomodel-extra {
   color: var(--color-layer3-fg-dim);
   /* TODO: make this even smaller */
   font-size: var(--font-size-small);
+  font-style: italic;
+  padding: 0;
+  margin: 0;
 }
 
 .no-results {

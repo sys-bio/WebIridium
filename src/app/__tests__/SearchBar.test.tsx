@@ -4,7 +4,7 @@ import { screen } from "@testing-library/react";
 
 import { renderWithinWorkspace } from "@/testing-utils/render";
 import { nameAtom } from "@/globals/settings";
-import WorkspaceBar from "../WorkspaceBar";
+import SearchBar from "../SearchBar";
 import userEvent from "@testing-library/user-event";
 
 const getWorkspaceNameLabelText = (workspaceName: string) =>
@@ -16,11 +16,11 @@ const WorkspaceNameLabel = () => {
   return <p>{getWorkspaceNameLabelText(workspaceName)}</p>;
 };
 
-const renderWorkspaceBar = async () => {
+const renderSearchBar = async () => {
   await renderWithinWorkspace(
     <div>
       <WorkspaceNameLabel />
-      <WorkspaceBar />
+      <SearchBar />
     </div>,
   );
 };
@@ -30,7 +30,7 @@ const clickRename = async () => {
 };
 
 it("should rename the workspace", async () => {
-  await renderWorkspaceBar();
+  await renderSearchBar();
 
   await clickRename();
 
@@ -45,7 +45,7 @@ it("should rename the workspace", async () => {
 });
 
 it("should cancel rename on escape", async () => {
-  await renderWorkspaceBar();
+  await renderSearchBar();
 
   await clickRename();
 
@@ -59,7 +59,7 @@ it("should cancel rename on escape", async () => {
 });
 
 it("should cancel rename when clicking somewhere else", async () => {
-  await renderWorkspaceBar();
+  await renderSearchBar();
 
   await clickRename();
 
@@ -75,7 +75,7 @@ it("should cancel rename when clicking somewhere else", async () => {
 });
 
 it("should not rename when name is invalid", async () => {
-  await renderWorkspaceBar();
+  await renderSearchBar();
 
   await clickRename();
 
