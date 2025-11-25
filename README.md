@@ -1,5 +1,4 @@
-<img width="593" height="128" alt="webiridum banner2" src="https://github.com/user-attachments/assets/b6579ef9-b30a-4980-bddc-6e3984d19a2b" />
-
+<img width="594" height="128" alt="webiridium banner" src="https://github.com/user-attachments/assets/667ba018-9624-46ab-bf9c-e0a214ae4a97" />
 
 [![Check formatting, linting, and tests](https://github.com/sys-bio/WebIridium/actions/workflows/check.yml/badge.svg)](https://github.com/sys-bio/WebIridium/actions/workflows/check.yml)
 [![Deploy static content to Pages](https://github.com/sys-bio/WebIridium/actions/workflows/deploy.yml/badge.svg)](https://github.com/sys-bio/WebIridium/actions/workflows/deploy.yml)
@@ -24,4 +23,3 @@ Try it out now! https://sys-bio.github.io/WebIridium/
 ## Preview
 
 <img width="735" height="478" alt="webiridium screeshot" src="https://github.com/user-attachments/assets/ce3f6a32-4f84-404f-b338-86eee86ea520" />
-
