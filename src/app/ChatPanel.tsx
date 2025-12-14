@@ -14,7 +14,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
-import { timeToAgoText } from "@/features/timeUtils";
+import { timeToAgoText } from "@/features/formatUtils";
 import { Tooltip } from "@/components/Tooltip";
 
 import SettingsIcon from "@/assets/icons/SettingsIcon.svg?react";

@@ -6,6 +6,7 @@ import styles from "./SearchBar.module.css";
 import buttonStyles from "@/components/Button.module.css";
 
 import { convertSbmlToAntimony } from "@/features/antimony";
+import { biomodelsDateToEnglish } from "@/features/formatUtils";
 
 import {
   loadBiomodelSbml,
@@ -28,35 +29,8 @@ const ACTIONS_GROUP_NAME = "Actions";
 const AUTOCOMPLETE_POPUP_ID = "searchBarAutocomplete";
 const BIOMODELS_SEARCH_LIMIT = 25;
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
 const isNameValid = (name: string): boolean => {
   return name.trim().length > 0;
-};
-
-/**
- * Prettifies a date in the format of "2020-1" into "Jan 2020"
- */
-const prettifyDate = (date: string): string => {
-  const match = /(\d+)-(\d+)/.exec(date);
-  if (match) {
-    return `${MONTHS[+match[2]]} ${match[1]}`;
-  } else {
-    return date;
-  }
 };
 
 const getFirstSentence = (synopysis: string): string =>
@@ -406,7 +380,7 @@ const AutocompleteBiomodelItem = ({
           <span className={styles.biomodelCitation}>
             <span>{item.info.authors.join(", ")}</span>
             <span> - {item.info.journal}</span>
-            <span>, {prettifyDate(item.info.date)}</span>
+            <span>, {biomodelsDateToEnglish(item.info.date)}</span>
           </span>
           <span className={styles.biomodelSynopsis}>
             {getFirstSentence(item.info.synopsis)}

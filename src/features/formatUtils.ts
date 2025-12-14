@@ -42,3 +42,34 @@ export const timeToAgoText = (ms: number) => {
     return chunks.join(" ");
   }
 };
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/**
+ * Prettifies a date in the format of "2020-1" into "Jan 2020"
+ */
+export const biomodelsDateToEnglish = (date: string): string => {
+  const match = /(\d+)-(\d+)?/.exec(date);
+  if (match) {
+    if (match[2] === undefined) {
+      return match[1];
+    } else {
+      return `${MONTHS[+match[2] - 1]} ${match[1]}`;
+    }
+  } else {
+    return date;
+  }
+};

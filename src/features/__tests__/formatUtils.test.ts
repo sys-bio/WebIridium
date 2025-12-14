@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { timeToAgoText } from "../timeUtils";
+import { timeToAgoText, biomodelsDateToEnglish } from "../formatUtils";
 
 describe("timeToAgoText", () => {
   it("should say just now when <0", () => {
@@ -25,5 +25,23 @@ describe("timeToAgoText", () => {
     expect(timeToAgoText(7373_000)).toBe("2 hours 2 minutes ago");
     expect(timeToAgoText(86400_000)).toBe("1 day ago");
     expect(timeToAgoText(86460_000)).toBe("1 day 1 minute ago");
+  });
+});
+
+describe("biomodelsDateToEnglish", () => {
+  it("should work", () => {
+    expect(biomodelsDateToEnglish("2024-1")).toEqual("Jan 2024");
+    expect(biomodelsDateToEnglish("2024-2")).toEqual("Feb 2024");
+    expect(biomodelsDateToEnglish("2024-12")).toEqual("Dec 2024");
+  });
+
+  it("should say only month if no month", () => {
+    expect(biomodelsDateToEnglish("2024-")).toEqual("2024");
+    expect(biomodelsDateToEnglish("2024-")).toEqual("2024");
+    expect(biomodelsDateToEnglish("2024-")).toEqual("2024");
+  });
+
+  it("should give up if no match", () => {
+    expect(biomodelsDateToEnglish("give up")).toEqual("give up");
   });
 });
