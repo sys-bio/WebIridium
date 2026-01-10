@@ -9,6 +9,7 @@ import { convertSbmlToAntimony } from "@/features/antimony";
 import { biomodelsDateToEnglish } from "@/features/formatUtils";
 
 import {
+  getSearchTypeFromSearchTerm,
   loadBiomodelSbml,
   useSearchBiomodels,
   type BiomodelInfo,
@@ -83,6 +84,7 @@ export const SearchBar = () => {
   const [open, setOpen] = useState(false);
   const [typing, setTyping] = useState("");
   const [isLoadingBiomodel, setIsLoadingBiomodel] = useState(false);
+  const searchType = typing && getSearchTypeFromSearchTerm(typing);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -233,6 +235,7 @@ export const SearchBar = () => {
             id={AUTOCOMPLETE_POPUP_ID}
             ref={popupRef}
             selected={selected}
+            isEmphasizeId={searchType === "id"}
             items={items}
             onClick={activate}
           />
@@ -251,12 +254,14 @@ const AutocompletePopup = ({
   id,
   ref,
   selected,
+  isEmphasizeId,
   items,
   onClick,
 }: {
   id: string;
   ref: React.RefObject<HTMLElement | null>;
   selected: AutocompleteItem;
+  isEmphasizeId: boolean;
   items: AutocompleteItems;
   onClick: (item: AutocompleteItem) => void;
 }) => {
@@ -292,6 +297,7 @@ const AutocompletePopup = ({
                   />
                 ) : item.type === "biomodel" ? (
                   <AutocompleteBiomodelItem
+                    isEmphasizeId={isEmphasizeId}
                     key={item.info.id}
                     item={item}
                     selected={selected === item}
@@ -352,14 +358,28 @@ const AutocompleteSimpleItem = ({
 const AutocompleteBiomodelItem = ({
   item,
   selected,
+  isEmphasizeId,
   onClick,
 }: {
   item: Extract<AutocompleteItem, { type: "biomodel" }>;
   selected: boolean;
+  isEmphasizeId: boolean;
   onClick: (item: AutocompleteItem) => void;
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   useFocusOnSelected(buttonRef, selected);
+
+  const name = isEmphasizeId ? (
+    <span className={styles.biomodelNameMajor}>
+      {item.info.id}
+      <span className={styles.biomodelNameMinor}> ({item.info.name})</span>
+    </span>
+  ) : (
+    <span className={styles.biomodelNameMajor}>
+      {item.info.name}
+      <span className={styles.biomodelNameMinor}> ({item.info.id})</span>
+    </span>
+  );
 
   return (
     <li>
@@ -376,7 +396,7 @@ const AutocompleteBiomodelItem = ({
           className={styles.autocompleteBiomodelButton}
           onClick={() => onClick(item)}
         >
-          <strong className={styles.biomodelName}>{item.info.name}</strong>
+          {name}
           <span className={styles.biomodelCitation}>
             <span>{item.info.authors.join(", ")}</span>
             <span> - {item.info.journal}</span>

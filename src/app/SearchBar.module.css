@@ -131,9 +131,13 @@
   margin: 0;
 }
 
-.biomodel-name {
+.biomodel-name-major {
   font-size: var(--font-size-medium);
   font-weight: normal;
+}
+
+.biomodel-name-minor {
+  color: var(--color-layer3-fg-dim);
 }
 
 .biomodel-citation {

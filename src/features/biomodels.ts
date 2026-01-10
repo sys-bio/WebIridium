@@ -48,7 +48,7 @@ const loadCache = async (): Promise<BiomodelInfo[]> => {
   }
 };
 
-const getSearchTypeFromSearchTerm = (term: string): SearchType => {
+export const getSearchTypeFromSearchTerm = (term: string): SearchType => {
   if (!isNaN(+term)) {
     return "id";
   } else {
