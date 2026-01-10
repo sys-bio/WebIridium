@@ -1,7 +1,6 @@
 import type { GraphSettings, VariableSettings } from "@/globals/settings";
 import type { HistoryRecord } from "@/globals/history";
 import type { ChatConversation } from "@/globals/chat";
-import type { ThemeOption } from "@/globals/appearance";
 
 const DATABASE_NAME = "testing_database4";
 const DATABASE_VERSION = 1;
@@ -9,8 +8,6 @@ const MAIN_STORE_NAME = "main";
 const MAIN_KEY_NAME = "main";
 
 export interface SavedDataV1 {
-  theme: ThemeOption;
-  editorFontSize: number;
   workspace: {
     name: string;
     content: string;

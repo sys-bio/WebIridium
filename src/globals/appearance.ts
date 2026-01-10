@@ -1,13 +1,17 @@
 import { atom } from "jotai";
 
 import { getPreferredTheme, type Theme } from "@/features/theme";
+import { atomWithStorage } from "jotai/utils";
 
 // theme
 
 export type ThemeOption = Theme | "Automatic";
 
 const _automaticThemeAtom = atom<Theme>(getPreferredTheme());
-export const themeOptionAtom = atom<ThemeOption>("Automatic");
+export const themeOptionAtom = atomWithStorage<ThemeOption>(
+  "theme",
+  "Automatic",
+);
 
 export const themeAtom = atom((get) => {
   const themeOption = get(themeOptionAtom);
@@ -29,4 +33,4 @@ export const tryUpdateThemeIfAutomaticAtom = atom(null, (_, set) => {
 });
 
 // other stuff
-export const editorFontSizeAtom = atom(12);
+export const editorFontSizeAtom = atomWithStorage("editorFontSize", 12);

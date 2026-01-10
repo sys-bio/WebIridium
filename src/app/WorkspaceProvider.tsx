@@ -57,8 +57,6 @@ const Initialize = ({
         }
 
         if (savedData) {
-          setThemeOption(savedData.theme);
-          setEditorFontSize(savedData.editorFontSize);
           updateAllHistory(savedData.workspace.history);
           updateAllChatHistory(savedData.workspace.chatHistory ?? []);
           setVariableSettingss(savedData.workspace.variableSettingss);
