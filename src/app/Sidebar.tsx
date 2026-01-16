@@ -10,7 +10,6 @@ import SteadyStateIcon from "@/assets/icons/SteadyStateIcon.svg?react";
 import HistoryIcon from "@/assets/icons/HistoryIcon.svg?react";
 import NotebookIcon from "@/assets/icons/NotebookIcon.svg?react";
 import RobotIcon from "@/assets/icons/RobotIcon.svg?react";
-import { Tooltip } from "@/components/Tooltip";
 
 const PANEL_ICONS: Record<
   LeftPanel,
@@ -23,6 +22,12 @@ const PANEL_ICONS: Record<
   Examples: NotebookIcon,
   Chat: RobotIcon,
 } as const;
+
+const TAB_ALIASES: Record<string, string> = {
+  "Time Course": "Time",
+  "Parameter Scan": "Scan",
+  "Steady State": "Steady",
+};
 
 // These one's appear the at the top, the rest appear at the bottom of the bar
 const TOP_PANELS = new Set<LeftPanel>([
@@ -40,16 +45,15 @@ interface SidebarItemProps {
 const SidebarItem = ({ panel: tab, isActive, onClick }: SidebarItemProps) => {
   const TabIcon = PANEL_ICONS[tab];
   return (
-    <Tooltip text={tab} side="right">
-      <button
-        className={styles.trigger}
-        aria-label={tab}
-        onClick={onClick}
-        data-state={isActive ? "active" : "inactive"}
-      >
-        <TabIcon aria-hidden width="1em" height="1em" />
-      </button>
-    </Tooltip>
+    <button
+      className={styles.trigger}
+      aria-label={tab}
+      onClick={onClick}
+      data-state={isActive ? "active" : "inactive"}
+    >
+      <TabIcon aria-hidden width="1em" height="1em" />
+      <span>{TAB_ALIASES[tab] ?? tab}</span>
+    </button>
   );
 };
 
@@ -69,7 +73,7 @@ const Sidebar = ({ panels, currentPanel, onPanelChange }: SidebarProps) => {
   };
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-collapsed={currentPanel === null}>
       <div className={styles.list}>
         {panels
           .filter((t) => TOP_PANELS.has(t))

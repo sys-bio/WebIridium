@@ -4,12 +4,21 @@
   justify-content: space-between;
   background: var(--color-layer1-bg);
   border-right: var(--border-layer1);
-  width: var(--size-6);
+  width: var(--size-7);
+  padding: var(--spacing-1);
+  box-sizing: content-box;
+
+  &[data-collapsed="true"] {
+    border-right: none;
+  }
 }
 
 .list {
   display: flex;
   flex-direction: column;
+  padding-block: var(--spacing-2);
+  gap: var(--spacing-3);
+  box-sizing: border-box;
 }
 
 .trigger {
@@ -17,12 +26,14 @@
   position: relative;
   background-color: transparent;
   border: none;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
   aspect-ratio: 1 / 1;
   cursor: pointer;
   transition-duration: var(--timing-fast);
-  font-size: var(--size-3);
+  font-size: var(--size-2);
 
   &:not([data-state="active"]):hover::before {
     content: "";
@@ -34,7 +45,7 @@
     display: block;
     position: absolute;
     top: 0;
-    left: 0;
+    left: calc(-1 * var(--spacing-1));
     height: 100%;
     width: var(--size-0);
   }
@@ -53,8 +64,12 @@
     display: block;
     position: absolute;
     top: 0;
-    left: 0;
+    left: calc(-1 * var(--spacing-1));
     height: 100%;
     width: var(--size-0);
+  }
+
+  & > span {
+    font-size: 9px;
   }
 }
