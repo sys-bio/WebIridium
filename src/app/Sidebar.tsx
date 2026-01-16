@@ -10,6 +10,7 @@ import SteadyStateIcon from "@/assets/icons/SteadyStateIcon.svg?react";
 import HistoryIcon from "@/assets/icons/HistoryIcon.svg?react";
 import NotebookIcon from "@/assets/icons/NotebookIcon.svg?react";
 import RobotIcon from "@/assets/icons/RobotIcon.svg?react";
+import { Tooltip } from "@/components/Tooltip";
 
 const PANEL_ICONS: Record<
   LeftPanel,
@@ -45,15 +46,17 @@ interface SidebarItemProps {
 const SidebarItem = ({ panel: tab, isActive, onClick }: SidebarItemProps) => {
   const TabIcon = PANEL_ICONS[tab];
   return (
-    <button
-      className={styles.trigger}
-      aria-label={tab}
-      onClick={onClick}
-      data-state={isActive ? "active" : "inactive"}
-    >
-      <TabIcon aria-hidden width="1em" height="1em" />
-      <span>{TAB_ALIASES[tab] ?? tab}</span>
-    </button>
+    <Tooltip text={tab} side="right">
+      <button
+        className={styles.trigger}
+        aria-label={tab}
+        onClick={onClick}
+        data-state={isActive ? "active" : "inactive"}
+      >
+        <TabIcon aria-hidden width="1em" height="1em" />
+        <span>{TAB_ALIASES[tab] ?? tab}</span>
+      </button>
+    </Tooltip>
   );
 };
 
