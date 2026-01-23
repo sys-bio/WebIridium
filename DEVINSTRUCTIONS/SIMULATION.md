@@ -28,6 +28,6 @@ When you want to add a new simulation feature, you will likely have to edit mult
 
 ## worker interface
 
-Workers are managed by `src/features/taskPool.ts`.
+Workers are managed by `WorkerPool` in `src/features/taskPool.ts`.
 
 Workers are expected to send messages in a specific format which you can take a look at in that file (look for the `Action`, `Result`, and `ErrorResult` types).

@@ -11,6 +11,7 @@ import {
   resetWorkerFailMode,
   setWorkerFailMode,
 } from "@/testing-utils/mockWorker";
+import { createControlledWorker } from "@/testing-utils/controlledWorker";
 
 describe("WorkerPool", () => {
   afterEach(() => {
@@ -196,5 +197,175 @@ describe("WorkerPool", () => {
     ];
     expect(state).toBe(1);
     expect(didSendState).toBe(false);
+  });
+
+  it("should return results in the correct order", async () => {
+    const [worker, controls] = createControlledWorker();
+    const pool = new WorkerPool(() => worker, {
+      maxWorkers: 1,
+      hasOrderedResults: true,
+    });
+    const result = pool.runTask("stub", 1, null);
+    const result2 = pool.runTask("stub", 2, null);
+
+    void controls.resolveTag(2, 2);
+    void controls.resolveTag(1, 1);
+
+    expect(await result).toBe(1);
+    expect(await result2).toBe(2);
+  });
+
+  it("should return results in the correct order even if one is delayed", async () => {
+    const [worker, controls] = createControlledWorker();
+    const pool = new WorkerPool(() => worker, {
+      maxWorkers: 1,
+    });
+    const result = pool.runTask("stub", 1, null);
+    const result2 = pool.runTask("stub", 2, null);
+
+    setTimeout(() => {
+      void controls.resolveTag(1, 1);
+    }, 100);
+    void controls.resolveTag(2, 2);
+
+    expect(await result).toBe(1);
+    expect(await result2).toBe(2);
+  });
+
+  it("should return results in the correct order (big)", async () => {
+    const [worker, controls] = createControlledWorker();
+    const pool = new WorkerPool(() => worker, {
+      maxWorkers: 1,
+    });
+    const result = Array.from({ length: 100 }).map((_, i) =>
+      pool.runTask("stub", i, null),
+    );
+
+    const numbers = Array.from({ length: 100 }).map((_, i) => i);
+    while (numbers.length > 0) {
+      const [number] = numbers.splice(
+        Math.floor(Math.random() * numbers.length),
+        1,
+      );
+      void controls.resolveTag(number, number);
+    }
+
+    for (let i = 0; i < 100; i++) {
+      expect(await result[i]).toEqual(i);
+    }
+  });
+
+  it("should return results of task in order even if one fails", async () => {
+    setWorkerResponseDelay(50);
+
+    let worker: MockWorker;
+    const pool = new WorkerPool(
+      () => {
+        worker = createCountingWorker() as unknown as MockWorker;
+        return worker as unknown as Worker;
+      },
+      {
+        maxWorkers: 1,
+        hasOrderedResults: true,
+      },
+    );
+
+    const result1 = pool.runTask("count", 0, null);
+    const result2 = pool.runTask("count", 0, null);
+
+    const abortController = new AbortController();
+    const expectPromise = expect(
+      pool.runTask("count", 0, null, abortController.signal),
+    ).rejects.toThrowError(new TaskTermination());
+
+    const result3 = pool.runTask("count", 0, null);
+
+    abortController.abort();
+
+    await expectPromise;
+    expect(await result1).toEqual(0);
+    expect(await result2).toEqual(1);
+    expect(await result3).toEqual(2);
+  });
+
+  it("should return result of queued task (ordered)", async () => {
+    const pool = new WorkerPool(createCountingWorker, {
+      hasOrderedResults: true,
+    });
+    const result = await pool.runTask("count", 0, null);
+    expect(result).toBe(0);
+  });
+
+  it("should return result of sequence of queued task (ordered)", async () => {
+    const pool = new WorkerPool(createCountingWorker, {
+      hasOrderedResults: true,
+    });
+    const result = await pool.runTask("count", 0, null);
+    expect(result).toBe(0);
+
+    const result2 = await pool.runTask("count", 0, null);
+    expect(result2).toBe(1);
+  });
+
+  it("should return result of multiple queued tasks (ordered)", async () => {
+    const pool = new WorkerPool(createCountingWorker, {
+      hasOrderedResults: true,
+    });
+    const results = Promise.all([
+      pool.runTask("count", 0, null),
+      pool.runTask("count", 0, null),
+      pool.runTask("count", 0, null),
+      pool.runTask("count", 0, null),
+      pool.runTask("count", 0, null),
+      pool.runTask("count", 0, null),
+    ]);
+
+    expect(await results).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("should terminate tasks and worker (ordered)", async () => {
+    setWorkerResponseDelay(1);
+
+    let worker: MockWorker;
+    const pool = new WorkerPool(
+      () => {
+        worker = createCountingWorker() as unknown as MockWorker;
+        return worker as unknown as Worker;
+      },
+      {
+        hasOrderedResults: true,
+      },
+    );
+
+    const abortController = new AbortController();
+    const expectPromise = expect(
+      pool.runTask("count", 0, null, abortController.signal),
+    ).rejects.toThrowError(new TaskTermination());
+
+    abortController.abort();
+
+    await expectPromise;
+    expect(worker!.terminated).toBeTruthy();
+  });
+
+  it("should not run terminated tasks (ordered)", async () => {
+    setWorkerResponseDelay(5);
+
+    const pool = new WorkerPool(createCountingWorker, {
+      maxWorkers: 1,
+      hasOrderedResults: true,
+    });
+
+    void pool.runTask("count", 0, null);
+
+    // This one should not run
+    const abortController = new AbortController();
+    const expectPromise = expect(
+      pool.runTask("count", 0, null, abortController.signal),
+    ).rejects.toThrowError();
+    abortController.abort();
+
+    expect(await pool.runTask("count", 0, null)).toBe(1);
+    await expectPromise;
   });
 });

@@ -30,6 +30,7 @@ export class LibSbmlSimSimulator extends Simulator {
     super();
     this.#workerPool = new WorkerPool(() => createWorker("libsbmlsim"), {
       maxWorkers: 4,
+      hasOrderedResults: true,
     });
   }
 
