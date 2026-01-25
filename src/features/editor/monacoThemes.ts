@@ -53,6 +53,14 @@ const iridiumDarkTheme: monaco.editor.IStandaloneThemeData = {
   ],
 };
 
+const iridiumVeryDarkTheme: monaco.editor.IStandaloneThemeData = {
+  ...iridiumDarkTheme,
+  colors: {
+    ...iridiumDarkTheme.colors,
+    "editor.background": "#1a1e24",
+  },
+};
+
 const LIGHT_KEYWORD_COLOR = "#038286";
 const LIGHT_KEYWORD2_COLOR = "#248457";
 const LIGHT_SPECIAL_COLOR = "#13817d";
@@ -207,6 +215,7 @@ export const monacoThemes: Record<
   { name: string; data: monaco.editor.IStandaloneThemeData }
 > = {
   Dark: { name: "iridiumDark", data: iridiumDarkTheme },
+  "Very Dark": { name: "iridiumVeryDark", data: iridiumVeryDarkTheme },
   Light: { name: "iridiumLight", data: iridiumLightTheme },
   Monokai: { name: "monokai", data: monokaiTheme },
   Catpuccin: { name: "catpuccin", data: catpuccinTheme },

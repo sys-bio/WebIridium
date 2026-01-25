@@ -1,7 +1,7 @@
 import * as monaco from "monaco-editor";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 
-import { monacoThemes } from "@/features/editor/theme";
+import { monacoThemes } from "@/features/editor/monacoThemes";
 import { antimonyMonarchDefinition } from "@/features/editor/monarchDefinition";
 
 self.MonacoEnvironment = {

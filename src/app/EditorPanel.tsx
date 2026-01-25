@@ -23,7 +23,7 @@ import {
   loadPresetAndSimulateAtom,
   variableSliderStatesAtom,
 } from "@/globals/slider";
-import { monacoThemes } from "@/features/editor/theme";
+import { monacoThemes } from "@/features/editor/monacoThemes";
 
 const SEMANTIC_CHECKER_DEBOUNCE = 100; // in ms
 const ANNOTATION_COLOR = "Red";
