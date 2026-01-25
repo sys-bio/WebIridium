@@ -1,10 +1,13 @@
 @layer base;
 
-@import "@/light.css";
-@import "@/dark.css";
-@import "@/monokai.css";
-@import "@/catpuccin.css";
+@import "@/themes/light.css";
+@import "@/themes/dark.css";
+@import "@/themes/monokai.css";
+@import "@/themes/catpuccin.css";
 
+/**
+ * There are more variables in the src/themes files.
+ */
 :root {
   box-sizing: border-box;
 
