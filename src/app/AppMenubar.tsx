@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import styles from "./AppMenubar.module.css";
 
 import {
@@ -30,12 +30,56 @@ import ProjectName from "./ProjectName";
 
 import { convertAntimonyToSbml } from "@/features/antimony";
 import { promptDownloadString } from "@/features/download";
-import { editorContentAtom } from "@/globals/model";
 import {
   hasActiveProjectAtom,
   metadataAtom,
   useProjectActions,
 } from "@/globals/project";
+import { editorContentAtom } from "@/globals/model";
+import {
+  cancelSimulationAtom,
+  computeSteadyStateAtom,
+  isSimulatingAtom,
+  runParameterScanAtom,
+  simulateTimeCourseAtom,
+} from "@/globals/simulation";
+
+const RunMenu = () => {
+  const isSimulating = useAtomValue(isSimulatingAtom);
+  const hasActiveProject = useAtomValue(hasActiveProjectAtom);
+  const cancelSimulaton = useSetAtom(cancelSimulationAtom);
+  const simulateTimeCourse = useSetAtom(simulateTimeCourseAtom);
+  const computeSteadyState = useSetAtom(computeSteadyStateAtom);
+  const runParameterScan = useSetAtom(runParameterScanAtom);
+
+  return (
+    <MenubarMenu name="Run">
+      <MenubarItem
+        name="Simulate Time Course"
+        disabled={isSimulating || !hasActiveProject}
+        onSelect={simulateTimeCourse}
+      />
+      <MenubarItem
+        name="Compute Steady State"
+        disabled={isSimulating || !hasActiveProject}
+        onSelect={computeSteadyState}
+      />
+      <MenubarItem
+        name="Run Parameter Scan"
+        disabled={isSimulating || !hasActiveProject}
+        onSelect={runParameterScan}
+      />
+
+      <MenubarSeparator />
+
+      <MenubarItem
+        name="Cancel Simulaton"
+        disabled={!isSimulating}
+        onSelect={cancelSimulaton}
+      />
+    </MenubarMenu>
+  );
+};
 
 const AppMenubar = () => {
   const { toast } = useToast();
@@ -165,6 +209,8 @@ const AppMenubar = () => {
 
           <MenubarItem name="Settings" onSelect={() => setSettingsOpen(true)} />
         </MenubarMenu>
+
+        <RunMenu />
 
         <MenubarMenu name="Help">
           <MenubarItem name="Help" onSelect={() => setHelpOpen(true)} />
