@@ -2,6 +2,8 @@
 :root[data-theme="Dark"] {
   color-scheme: dark;
 
+  --color-accent: oklch(0.613 0.1021 194.96);
+
   --opacity-translucent: 10%;
   --opacity-dim: 62.35%;
   --opacity-very-dim: 47%;
@@ -12,28 +14,28 @@
   --color-disabled-fg: oklch(0.6 0.0067 248.03);
 
   --color-button-bg: oklch(0.3215 0.0067 248.03);
-  --color-button-fg: oklch(0.9624 0.0042 236.5);
+  --color-button-fg: oklch(0.9324 0.0042 236.5);
   --color-button-border: oklch(0.3989 0.0036 264.52);
 
-  --color-card-bg: oklch(0.2415 0.0067 248.03);
-  --color-card-fg: oklch(0.9624 0.0042 236.5);
-  --color-card-border: oklch(0.3289 0.0036 264.52);
+  --color-card-bg: oklch(0.2815 0.0017 248.03);
+  --color-card-fg: oklch(0.9624 0.0022 236.5);
+  --color-card-border: oklch(0.3589 0.0036 264.52);
 
-  --color-input-bg: oklch(0.2329 0.0024 247.93);
+  --color-input-bg: oklch(0.26 0.0024 247.93);
   --color-input-fg: var(--color-layer2-fg);
   --color-input-border: oklch(0.3589 0.0036 264.52);
 
   /* Layers/Background Elements */
 
-  --color-layer1-bg: oklch(0.1769 0.0026 247.98);
-  --color-layer1-fg: oklch(0.9684 0.0042 236.5);
+  --color-layer1-bg: oklch(0.2369 0.0026 247.98);
+  --color-layer1-fg: oklch(0.9384 0.0042 236.5);
   --color-layer1-border: oklch(0.3498 0.0105 278.3);
 
-  --color-layer2-bg: oklch(0.2515 0.0047 248);
-  --color-layer2-fg: oklch(0.9624 0.0042 236.5);
+  --color-layer2-bg: oklch(0.2815 0.0047 248);
+  --color-layer2-fg: oklch(0.9324 0.0042 236.5);
   --color-layer2-border: oklch(0.3291 0.0152 280.63);
 
-  --color-layer3-bg: oklch(0.3243 0.0037 264.52);
+  --color-layer3-bg: oklch(0.3343 0.0047 248.52);
   --color-layer3-fg: oklch(0.9474 0.0042 236.5);
   --color-layer3-border: oklch(0.3576 0.0082 277.01);
 

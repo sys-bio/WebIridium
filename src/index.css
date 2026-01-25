@@ -50,7 +50,7 @@
 
   /* Base Colors (more defined in individual theme files */
 
-  --color-accent: #248f8f;
+  --color-accent: oklch(0.593 0.0921 194.96);
   --color-accent-fg: #fff;
 
   --color-data-table-fg: #000;

@@ -9,11 +9,12 @@ const iridiumDarkTheme: monaco.editor.IStandaloneThemeData = {
   base: "vs-dark",
   inherit: false,
   colors: {
-    "editor.background": "#1a1e24",
+    "editor.background": "#1f2329",
     "editor.foreground": "#e6e8eb",
     "editorLineNumber.foreground": "#5e6673",
     "editorLineNumber.activeForeground": "#c1c8d4",
     "editor.selectionBackground": "#283e5e",
+    "scrollbar.shadow": "#00000055",
   },
   rules: [
     { token: "invalid", foreground: "#ff0000" },
