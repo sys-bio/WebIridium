@@ -12,7 +12,7 @@
 :root {
   box-sizing: border-box;
 
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Source Sans", system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -255,6 +255,7 @@
 }
 
 body {
+  font-family: "Open Sans", system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-size: var(--font-size-medium);
 }
 
@@ -280,4 +281,29 @@ h6 {
 
 p {
   margin-block: var(--spacing-4);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+@font-face {
+  font-family: "Source Sans";
+  src: url("@/assets/fonts/SourceSans3-VariableFont_wdth,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Sans";
+  src: url("@/assets/fonts/SourceSans3-Italic-VariableFont_wdth,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
 }
