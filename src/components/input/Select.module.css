@@ -20,6 +20,17 @@
     border: 1px solid var(--color-accent);
     outline: var(--border-input-focused);
   }
+
+  & > span:not(.trigger-icon) {
+    text-align: left;
+    min-width: 0;
+    flex-grow: 1;
+  }
+}
+
+.value {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .trigger-icon {
