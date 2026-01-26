@@ -289,6 +289,10 @@ input,
 select,
 textarea {
   font-family: inherit;
+
+  &:focus-visible {
+    outline: var(--outline-focused);
+  }
 }
 
 @font-face {
