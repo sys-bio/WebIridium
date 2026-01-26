@@ -7,7 +7,7 @@
 
 .title-text {
   font-size: var(--font-size-medium);
-  font-weight: bold;
+  font-weight: 700;
   color: var(--color-layer1-fg-dim);
   margin-block: var(--spacing-2);
 }
