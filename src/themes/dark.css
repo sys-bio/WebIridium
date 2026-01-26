@@ -2,8 +2,6 @@
 :root[data-theme="Dark"] {
   color-scheme: dark;
 
-  --color-accent: oklch(0.613 0.1021 194.96);
-
   --opacity-translucent: 10%;
   --opacity-dim: 62.35%;
   --opacity-very-dim: 47%;
@@ -19,7 +17,7 @@
 
   --color-card-bg: oklch(0.2105 0.0017 248.03);
   --color-card-fg: oklch(0.9224 0.0022 236.5);
-  --color-card-border: oklch(0.2889 0.0036 264.52);
+  --color-card-border: oklch(0.3189 0.0036 264.52);
 
   --color-input-bg: oklch(0.26 0.0024 247.93);
   --color-input-fg: var(--color-layer2-fg);
