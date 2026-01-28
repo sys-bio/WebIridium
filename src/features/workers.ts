@@ -15,7 +15,6 @@ export const createWorker = (type: WorkerType): Worker => {
     case "fileSystem":
       return new FileSystemWorker();
     case "copasi":
-      console.log("heyo");
       return new CopasiWorker();
     case "libsbmlsim":
       return new LibSbmlSimWorker();
