@@ -480,10 +480,5 @@ class COPASI {
 
 }
 
-// if module is defined, export the COPASI class
-if (typeof module !== 'undefined') {
-    module.exports = COPASI;
-}
-
-//export default COPASI;
-//export {COPASI};
+export default COPASI;
+export {COPASI};

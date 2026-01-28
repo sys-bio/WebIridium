@@ -6,6 +6,7 @@
 import FileSystemWorker from "@/workers/FileSystemWorker?worker";
 import AntimonyWorker from "@/workers/AntimonyWorker?worker";
 import LibSbmlSimWorker from "@/workers/LibSbmlSimWorker?worker";
+import CopasiWorker from "@/workers/CopasiWorker?worker";
 
 export type WorkerType = "fileSystem" | "copasi" | "antimony" | "libsbmlsim";
 
@@ -14,7 +15,8 @@ export const createWorker = (type: WorkerType): Worker => {
     case "fileSystem":
       return new FileSystemWorker();
     case "copasi":
-      return new Worker(import.meta.env.BASE_URL + "/copasiWorker.js");
+      console.log("heyo");
+      return new CopasiWorker();
     case "libsbmlsim":
       return new LibSbmlSimWorker();
     case "antimony":

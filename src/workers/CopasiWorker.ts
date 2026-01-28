@@ -1,4 +1,12 @@
-importScripts("libantimony.js", "antimony_wrap.js", "copasijs.js", "copasi.js");
+/* eslint-disable */
+// @ts-nocheck
+
+import LibCopasiWasm from "@/vendor/copasijs.wasm?url";
+import LibAntimonyWasm from "@/vendor/libantimony.wasm?url";
+import createCpsModule from "@/vendor/copasijs.js";
+import COPASI from "@/vendor/copasi.js";
+import libantimony from "@/vendor/libantimony.js";
+import AntimonyWrapper from "@/vendor/antimony_wrap.js";
 
 let copasi = null;
 let antimony = null;
@@ -9,9 +17,25 @@ const loadLibraries = () => {
     return loadedPromise;
   }
 
+  // override the wasm imports
+  const locateFile = (name: string, root: string) => {
+    if (name.endsWith(".wasm")) {
+      if (name.includes("antimony")) {
+        return LibAntimonyWasm;
+      } else {
+        return LibCopasiWasm;
+      }
+    }
+    return root + name;
+  };
+
   loadedPromise = Promise.all([
-    createCpsModule().then((module) => (copasi = new COPASI(module))),
-    libantimony().then((module) => (antimony = new AntimonyWrapper(module))),
+    createCpsModule({ locateFile }).then(
+      (module) => (copasi = new COPASI(module)),
+    ),
+    libantimony({ locateFile }).then(
+      (module) => (antimony = new AntimonyWrapper(module)),
+    ),
     // if the load fails, reset the promise and try again next time
   ]).catch(() => (loadedPromise = null));
 
