@@ -1,3 +1,4 @@
+// eslint-ignore-all
 import { errorToDisplayString } from "@/features/formatUtils";
 import type {
   ProjectData,

@@ -3,3 +3,4 @@ public/**/*
 !public/*Worker*.js
 src/assets/**/*.json
 src/features/editor/language-handler/**/*
+src/vendor/

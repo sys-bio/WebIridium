@@ -1,6 +1,14 @@
-importScripts("libsbmlsim.js", "libantimony.js", "antimony_wrap.js");
+/* eslint-disable */
+// @ts-nocheck
 
-let simulator = null;
+import LibSbmlSimWasm from "@/vendor/libsbmlsim.wasm?url";
+import LibAntimonyWasm from "@/vendor/libantimony.wasm?url";
+import libsbmlsim from "@/vendor/libsbmlsim.js";
+import libantimony from "@/vendor/libantimony.js";
+import AntimonyWrapper from "@/vendor/antimony_wrap.js";
+import { type Simulator } from "@/vendor/libsbmlsim.d.ts";
+
+let simulator: Simulator = null;
 let antimony = null;
 
 /**
@@ -33,9 +41,25 @@ const loadLibraries = () => {
     return loadedPromise;
   }
 
+  // override the libsbmlsim.wasm import
+  const locateFile = (name: string, root: string) => {
+    if (name.endsWith(".wasm")) {
+      if (name.includes("antimony")) {
+        return LibAntimonyWasm;
+      } else {
+        return LibSbmlSimWasm;
+      }
+    }
+    return root + name;
+  };
+
   loadedPromise = Promise.all([
-    libsbmlsim().then((module) => (simulator = new module.Simulator())),
-    libantimony().then((module) => (antimony = new AntimonyWrapper(module))),
+    libsbmlsim({ locateFile }).then(
+      (module) => (simulator = new module.Simulator()),
+    ),
+    libantimony({ locateFile }).then(
+      (module) => (antimony = new AntimonyWrapper(module)),
+    ),
     // if the load fails, reset the promise and try again next time
   ]).catch(() => (loadedPromise = null));
 
