@@ -48,11 +48,10 @@ const handleAction = async (action) => {
         throw new Error(antimonyConversion.getResult());
       }
 
-      self.postMessage({
+      return {
         id: action.id,
         data: antimonyConversion.getResult(),
-      });
-      break;
+      };
     }
 
     case "convertAntimonyToSbml": {
@@ -67,11 +66,10 @@ const handleAction = async (action) => {
         throw new Error(sbmlConversion.getResult());
       }
 
-      self.postMessage({
+      return {
         id: action.id,
         data: sbmlConversion.getResult(),
-      });
-      break;
+      };
     }
 
     default:

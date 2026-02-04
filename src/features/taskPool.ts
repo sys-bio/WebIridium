@@ -188,6 +188,7 @@ export abstract class TaskPool<RunnerInfo> {
   #insertQueue(result: Result | ErrorResult | TerminatedResult): void {
     if (this.hasOrderedResults) {
       const insertAt = this.#resultQueue.findIndex((r) => r.id > result.id);
+      console.log(result);
       if (insertAt === -1) {
         this.#resultQueue.push(result);
       } else {

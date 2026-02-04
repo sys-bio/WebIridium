@@ -136,11 +136,10 @@ const handleAction = async (action) => {
 
       simulationResult.delete();
 
-      self.postMessage({
+      return {
         id: action.id,
         data: { columns },
-      });
-      break;
+      };
     }
 
     case "steadyState": {
@@ -148,15 +147,14 @@ const handleAction = async (action) => {
     }
 
     case "loadModel": {
-      self.postMessage({
+      return {
         id: action.id,
         data: {
           floatingSpecies: cachedFloatingSpecies,
           boundarySpecies: cachedBoundarySpecies,
           parameters: cachedParameters,
         },
-      });
-      break;
+      };
     }
 
     default:

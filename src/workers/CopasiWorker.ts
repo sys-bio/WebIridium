@@ -108,11 +108,10 @@ const handleAction = async (action) => {
         throw new Error(result.messages);
       }
 
-      self.postMessage({
+      return {
         id: action.id,
         data: result,
-      });
-      break;
+      };
     }
 
     case "steadyState": {
@@ -156,7 +155,7 @@ const handleAction = async (action) => {
       const fluxControl = copasi.getFluxControlCoefficients(true);
       const elasticities = copasi.getElasticities(true);
 
-      self.postMessage({
+      return {
         id: action.id,
         data: {
           eigenValues,
@@ -170,21 +169,18 @@ const handleAction = async (action) => {
             value: selectedValues[i],
           })),
         },
-      });
-
-      break;
+      };
     }
 
     case "loadModel": {
-      self.postMessage({
+      return {
         id: action.id,
         data: {
           modelInfo: cachedModelInfo,
           boundarySpeciesNames: cachedBoundarySpeciesNames,
           reactionIds: cachedReactionIds,
         },
-      });
-      break;
+      };
     }
 
     default:
