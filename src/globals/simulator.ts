@@ -29,13 +29,16 @@ export const getSimulatorName = (simulator: Simulator): string => {
   }
 };
 
-const _simulatorAtom = atom<Simulator>(new CopasiSimulator());
+const _simulatorNameAtom = atom("COPASI");
 
-export const simulatorAtom = atom((get) => get(_simulatorAtom));
+export const simulatorAtom = atom((get) => {
+  return SIMULATOR_PRODUCERS[get(_simulatorNameAtom)]();
+});
+
 export const updateSimulatorAtom = atom(null, (get, set, name: string) => {
-  const currentSimulator = get(_simulatorAtom);
+  const currentSimulator = get(simulatorAtom);
   if (getSimulatorName(currentSimulator) !== name) {
-    set(_simulatorAtom, SIMULATOR_PRODUCERS[name]());
+    set(_simulatorNameAtom, name);
 
     // reset mode to time course, since some simulators don't support steady state
     set(parameterScanOptionsAtom, {

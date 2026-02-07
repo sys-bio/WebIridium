@@ -113,7 +113,9 @@ export const itShouldDisplayToasts = ({
     const button = screen.getByText(buttonText);
     await userEvent.click(button);
 
-    expect(getToastHistory()).toHaveLength(1);
+    await waitFor(() => {
+      expect(getToastHistory()).toHaveLength(1);
+    });
   });
 };
 
