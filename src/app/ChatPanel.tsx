@@ -767,7 +767,9 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                       {m.text}
                     </ReactMarkdown>
                   ) : (
-                    <div className={styles.plainText}>{m.text}</div>
+                    <div className={styles.plainText}>
+                      {m.text}
+                    </div>
                   )}
                 </div>
               </div>
