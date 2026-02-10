@@ -21,6 +21,7 @@ import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
 import { timeToAgoText } from "@/features/formatUtils";
+import { getVerboseError } from "@/features/chat/errorUtils";
 import { Tooltip } from "@/components/Tooltip";
 
 import SettingsIcon from "@/assets/icons/SettingsIcon.svg?react";
@@ -45,6 +46,7 @@ type Message = {
   role: "user" | "llm";
   text: string;
   thinking?: boolean;
+  isError?: boolean;
 };
 
 const ConversationItem = ({
@@ -83,6 +85,7 @@ const ConversationItem = ({
             id: m.id,
             role: m.role,
             text: m.text,
+            isError: m.isError,
           })),
         );
         setShowHistory(false);
@@ -114,6 +117,8 @@ const ChatSettings = ({
   waitingForReply: boolean;
 }) => {
   const [keyInput, setKeyInput] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
 
   const [systemPrompt, setSystemPrompt] = useAtom(systemPromptAtom);
   const [promptInput, setPromptInput] = useState(systemPrompt);
@@ -123,10 +128,27 @@ const ChatSettings = ({
     setPromptInput(systemPrompt);
   }, [systemPrompt]);
 
-  const handleSaveKey = () => {
-    if (keyInput) {
+  const handleSaveKey = async () => {
+    if (!keyInput) return;
+
+    setIsVerifying(true);
+    setVerificationError(null);
+
+    try {
+      const resp = await fetch("https://api.openai.com/v1/models", {
+        headers: { Authorization: `Bearer ${keyInput}` },
+      });
+
+      if (!resp.ok) {
+        throw new Error(`Invalid API Key (Status ${resp.status})`);
+      }
+
       setApiKey(keyInput);
       setKeyInput("");
+    } catch (err: any) {
+      setVerificationError(err.message || "Failed to verify API key");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -183,13 +205,18 @@ const ChatSettings = ({
               onClick={handleSaveKey}
               disabled={!keyInput}
             >
-              Save
+              {isVerifying ? "Verifying..." : "Save"}
             </button>
           </div>
         )}
         <div className={styles.settingsNote}>
           Your API key is stored locally and never shared.
         </div>
+        {verificationError && (
+          <div className={styles.verificationError}>
+            Error: {verificationError}
+          </div>
+        )}
       </div>
 
       <div className={styles.settingsSection}>
@@ -281,6 +308,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       id: m.id,
       role: m.role,
       text: m.text,
+      isError: m.isError,
     }));
 
     try {
@@ -368,6 +396,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       }
 
       const data = (await resp.json()) as OpenAiResponse;
+
       const reply =
         data?.output?.find((i) => i.type === "message")?.content[0]?.text ??
         "(no response)";
@@ -375,10 +404,14 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
         m.id === placeholderId ? { ...m, text: reply, thinking: false } : m,
       );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      finalizedMessages = messages.map((m) =>
+      finalizedMessages = newMessages.map((m) =>
         m.id === placeholderId
-          ? { ...m, text: `Error: ${message}`, thinking: false }
+          ? {
+            ...m,
+            text: getVerboseError(err),
+            thinking: false,
+            isError: true,
+          }
           : m,
       );
     } finally {
@@ -500,10 +533,11 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                 }
               >
                 <div
-                  className={
-                    styles.messageBubble +
-                    (m.thinking ? ` ${styles.thinkingBubble}` : "")
-                  }
+                  className={clsx(
+                    styles.messageBubble,
+                    m.thinking && styles.thinkingBubble,
+                    m.isError && styles.errorBubble,
+                  )}
                 >
                   {m.thinking ? (
                     <PulseLoader size="8px" spacing="6px" />
@@ -563,7 +597,9 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                       {m.text}
                     </ReactMarkdown>
                   ) : (
-                    <div className={styles.plainText}>{m.text}</div>
+                    <div className={styles.plainText}>
+                      {m.text}
+                    </div>
                   )}
                 </div>
               </div>
@@ -578,6 +614,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                 </div>
               </div>
             ) : null}
+
             <div className={styles.inputColumn}>
               <div
                 className={clsx(
