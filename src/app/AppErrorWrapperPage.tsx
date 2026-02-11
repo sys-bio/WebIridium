@@ -38,8 +38,7 @@ class AppErrorWrapperPage extends React.Component<Props, State> {
         // eslint-disable-next-line
         `Cause: ${String(this.state.error.cause || "missing")}\n\n` +
         `Stacktrace: ${this.state.error.stack || "missing"}\n\n` +
-        `Component Stack: ${this.state.errorInfo.componentStack}\n\n` +
-        `Digest: ${this.state.errorInfo.digest}`;
+        `Component Stack: ${this.state.errorInfo.componentStack}\n\n`;
 
       return (
         <div className={styles.container}>
