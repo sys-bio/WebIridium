@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithinWorkspace } from "@/testing-utils/render";
 import ChatPanel from "../ChatPanel";
@@ -28,7 +28,7 @@ describe("ChatPanel", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({}),
+      json: () => Promise.resolve({}),
     });
 
     await userEvent.click(screen.getByText("Save"));
@@ -46,7 +46,7 @@ describe("ChatPanel", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
-      text: async () => "Unauthorized",
+      text: () => Promise.resolve("Unauthorized"),
     });
 
     const input = screen.getByLabelText("Message input");
@@ -55,12 +55,16 @@ describe("ChatPanel", () => {
     await userEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(screen.getByText("Invalid API Key provided. (401)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Invalid API Key provided. (401)"),
+      ).toBeInTheDocument();
     });
 
-    const errorMsg = screen.getByText("Invalid API Key provided. (401)");
-    const bubble = errorMsg.closest('[class*="messageBubble"]');
-    expect(bubble?.className).toMatch(/errorBubble/);
+    const messages = screen.getAllByTestId("chat-message");
+    const errorBubble = messages.find((m) =>
+      within(m).queryByText("Invalid API Key provided. (401)"),
+    );
+    expect(errorBubble?.className).toMatch(/errorBubble/);
   });
 
   it("should display a verbose error message when API returns 429", async () => {
@@ -69,7 +73,7 @@ describe("ChatPanel", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 429,
-      text: async () => "Too Many Requests",
+      text: () => Promise.resolve("Too Many Requests"),
     });
 
     const input = screen.getByLabelText("Message input");
@@ -78,7 +82,11 @@ describe("ChatPanel", () => {
     await userEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(screen.getByText("Rate limit exceeded. Please wait a moment and try again. (429)")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Rate limit exceeded. Please wait a moment and try again. (429)",
+        ),
+      ).toBeInTheDocument();
     });
   });
 

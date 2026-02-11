@@ -118,8 +118,9 @@ const ChatSettings = ({
 }) => {
   const [keyInput, setKeyInput] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationError, setVerificationError] = useState<string | null>(null);
-
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null,
+  );
   const [systemPrompt, setSystemPrompt] = useAtom(systemPromptAtom);
   const [promptInput, setPromptInput] = useState(systemPrompt);
 
@@ -145,8 +146,10 @@ const ChatSettings = ({
 
       setApiKey(keyInput);
       setKeyInput("");
-    } catch (err: any) {
-      setVerificationError(err.message || "Failed to verify API key");
+    } catch (err: unknown) {
+      setVerificationError(
+        err instanceof Error ? err.message : "Failed to verify API key",
+      );
     } finally {
       setIsVerifying(false);
     }
@@ -407,11 +410,11 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       finalizedMessages = newMessages.map((m) =>
         m.id === placeholderId
           ? {
-            ...m,
-            text: getVerboseError(err),
-            thinking: false,
-            isError: true,
-          }
+              ...m,
+              text: getVerboseError(err),
+              thinking: false,
+              isError: true,
+            }
           : m,
       );
     } finally {
@@ -597,9 +600,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                       {m.text}
                     </ReactMarkdown>
                   ) : (
-                    <div className={styles.plainText}>
-                      {m.text}
-                    </div>
+                    <div className={styles.plainText}>{m.text}</div>
                   )}
                 </div>
               </div>

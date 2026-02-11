@@ -635,7 +635,6 @@
   gap: var(--spacing-1);
 }
 
-
 .input-wrapper-connected {
   gap: 0;
 }
@@ -687,5 +686,9 @@
 .error-bubble {
   border-color: var(--color-error) !important;
   color: var(--color-error);
-  background: color-mix(in oklch, var(--color-error) 15%, transparent) !important;
+  background: color-mix(
+    in oklch,
+    var(--color-error) 15%,
+    transparent
+  ) !important;
 }
