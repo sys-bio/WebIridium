@@ -1,5 +1,4 @@
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback } from "react";
 import { variablesAtom, variableSettingssAtom } from "@/globals/model";
 import { type VariableSettings } from "@/globals/settings";
 import VariableList from "@/app/simulation/variable-list/VariableList";
@@ -13,15 +12,15 @@ const UncontrolledVariableList = () => {
     variableSettingssAtom,
   );
 
-  const handleVariableSettingsChange = useCallback(
-    (variableName: string, newSettings: VariableSettings) => {
-      setVariableSettingss((old) => ({
-        ...old,
-        [variableName]: newSettings,
-      }));
-    },
-    [setVariableSettingss],
-  );
+  const handleVariableSettingsChange = (
+    variableName: string,
+    newSettings: VariableSettings,
+  ) => {
+    setVariableSettingss((old) => ({
+      ...old,
+      [variableName]: newSettings,
+    }));
+  };
 
   return (
     <VariableList
