@@ -34,7 +34,16 @@ const includeGoatCounterPlugin: Plugin = {
 // https://vite.dev/config/
 export default defineConfig({
   base: "/WebIridium",
-  plugins: [react(), svgr(), nodePolyfills(), includeGoatCounterPlugin],
+  plugins: [
+    react({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
+    svgr(),
+    nodePolyfills(),
+    includeGoatCounterPlugin,
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
