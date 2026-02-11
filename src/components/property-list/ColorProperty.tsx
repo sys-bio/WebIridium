@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Popover as RadixPopover } from "radix-ui";
 import { HexColorPicker } from "react-colorful";
 import styles from "./PropertyList.module.css";
@@ -20,25 +20,25 @@ const isValidColor = (color: string): boolean => {
 // TODO: fix the color box being slightly larger than the input box for numeric slider
 const ColorProperty = ({ name, value, onChange }: ColorPropertyProps) => {
   const [workingValue, setWorkingValue] = useState(value);
-  const lastValidValueRef = useRef(value);
+  const [lastValidValue, setLastValidValue] = useState(value);
 
   const handleInputChange = (inputValue: string) => {
     setWorkingValue(inputValue);
 
     if (isValidColor(inputValue)) {
-      lastValidValueRef.current = inputValue;
+      setLastValidValue(inputValue);
       onChange(inputValue);
     }
   };
 
   const handleInputBlur = () => {
     if (!isValidColor(workingValue)) {
-      setWorkingValue(lastValidValueRef.current);
+      setWorkingValue(lastValidValue);
     }
   };
 
   const isInvalid =
-    !isValidColor(workingValue) && workingValue !== lastValidValueRef.current;
+    !isValidColor(workingValue) && workingValue !== lastValidValue;
 
   return (
     <div className={styles.property}>
