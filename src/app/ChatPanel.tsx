@@ -536,6 +536,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                 }
               >
                 <div
+                  data-testid="chat-message"
                   className={clsx(
                     styles.messageBubble,
                     m.thinking && styles.thinkingBubble,
