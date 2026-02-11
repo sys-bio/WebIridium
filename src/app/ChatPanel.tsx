@@ -630,11 +630,11 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       finalizedMessages = newMessages.map((m) =>
         m.id === placeholderId
           ? {
-            ...m,
-            text: getVerboseError(err),
-            thinking: false,
-            isError: true,
-          }
+              ...m,
+              text: getVerboseError(err),
+              thinking: false,
+              isError: true,
+            }
           : m,
       );
     } finally {
@@ -972,9 +972,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                       {m.text}
                     </ReactMarkdown>
                   ) : (
-                    <div className={styles.plainText}>
-                      {m.text}
-                    </div>
+                    <div className={styles.plainText}>{m.text}</div>
                   )}
                 </div>
               </div>
