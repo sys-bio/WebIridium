@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, type RefObject } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
 import {
   savePartialProjectAtom,
-  saveFullProjectAtom,
   savedCodeAtom,
   savedMetadataAtom,
   savedResultsAtom,
   savedIridiumAtom,
+  isSavingAtom,
 } from "@/globals/saving";
 import { hasActiveProjectAtom } from "@/globals/project";
 import type {
@@ -17,7 +17,12 @@ import type {
 
 const SAVE_DEBOUNCE = 1_000;
 
-const useAutoSave = <T>(saver: (data: T) => Promise<void>, data: T) => {
+const useAutoSave = <T>(
+  callback: (data: T) => Promise<void>,
+  data: T,
+  savingRef: RefObject<number>,
+) => {
+  const onSave = useEffectEvent(callback);
   const hasActiveProject = useAtomValue(hasActiveProjectAtom);
 
   // Skip saving on open since it is redundant.
@@ -33,58 +38,82 @@ const useAutoSave = <T>(saver: (data: T) => Promise<void>, data: T) => {
 
       return () => clearTimeout(id);
     }
-  }, [hasActiveProject]);
+  }, [hasActiveProject, savingRef]);
 
   useEffect(() => {
+    savingRef.current += 1;
+
+    let ran = false;
     const id = setTimeout(() => {
       if (canSaveRef.current) {
-        void saver(data);
+        void onSave(data);
       }
+      savingRef.current -= 1;
+      ran = true;
     }, SAVE_DEBOUNCE);
-    return () => clearTimeout(id);
-  }, [data, saver]);
+
+    return () => {
+      if (!ran) {
+        savingRef.current -= 1;
+      }
+      clearTimeout(id);
+    };
+  }, [data, savingRef]);
 };
 
 const ProjectAutoSaver = () => {
   const savePartial = useSetAtom(savePartialProjectAtom);
-  const saveFull = useSetAtom(saveFullProjectAtom);
 
+  const savingRef = useRef(0);
+  const isSaving = useAtomValue(isSavingAtom);
   const savedMetadata = useAtomValue(savedMetadataAtom);
   const savedCode = useAtomValue(savedCodeAtom);
   const savedResults = useAtomValue(savedResultsAtom);
   const savedIridium = useAtomValue(savedIridiumAtom);
 
   useEffect(() => {
-    const handleUnload = () => {
-      void saveFull();
+    const handleUnload = (e: Event) => {
+      if (savingRef.current > 0 || isSaving) {
+        e.preventDefault();
+      }
     };
 
     window.addEventListener("beforeunload", handleUnload);
 
     return () => window.removeEventListener("beforeunload", handleUnload);
-  }, [saveFull]);
+  }, [savingRef, isSaving]);
 
-  const saveMetadata = useCallback(
-    async (data: Metadata) => await savePartial({ metadata: data }),
-    [savePartial],
-  );
-  const saveIridium = useCallback(
-    async (data: IridiumData) => await savePartial({ iridium: data }),
-    [savePartial],
-  );
-  const saveResults = useCallback(
-    async (data: ResultsData) => await savePartial({ results: data }),
-    [savePartial],
-  );
-  const saveCode = useCallback(
-    async (data: string) => await savePartial({ code: data }),
-    [savePartial],
+  useAutoSave(
+    async (data: Metadata) => {
+      await savePartial({ metadata: data });
+    },
+    savedMetadata,
+    savingRef,
   );
 
-  useAutoSave(saveMetadata, savedMetadata);
-  useAutoSave(saveIridium, savedIridium);
-  useAutoSave(saveResults, savedResults);
-  useAutoSave(saveCode, savedCode);
+  useAutoSave(
+    async (data: IridiumData) => {
+      await savePartial({ iridium: data });
+    },
+    savedIridium,
+    savingRef,
+  );
+
+  useAutoSave(
+    async (data: ResultsData) => {
+      await savePartial({ results: data });
+    },
+    savedResults,
+    savingRef,
+  );
+
+  useAutoSave(
+    async (data: string) => {
+      await savePartial({ code: data });
+    },
+    savedCode,
+    savingRef,
+  );
 
   return null;
 };
