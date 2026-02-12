@@ -1,6 +1,5 @@
 import { useRef } from "react";
-import { atom, useSetAtom, useAtomValue, type Atom } from "jotai";
-import { loadable } from "jotai/utils";
+import { atom, useSetAtom, type Atom } from "jotai";
 
 import {
   migrateMetadata,
@@ -42,6 +41,8 @@ import {
 } from "./simulation";
 import { saveFullProjectAtom } from "./saving";
 import { variableSliderStatesAtom } from "./slider";
+import { useAtom } from "jotai";
+import { unwrap } from "jotai/utils";
 
 // Increments every time a change is made to the file system
 // Other atoms should `get` this if they want to re-evaluate when the file system changes.
@@ -79,7 +80,37 @@ const _projectListAtom: Atom<Promise<Map<ProjectId, Metadata>>> = atom(
     return migratedProjects;
   },
 );
-export const projectListAtom = loadable(_projectListAtom);
+
+export type ProjectListState =
+  | { state: "loading" }
+  | { state: "hasError"; error: unknown }
+  | { state: "hasData"; data: Map<ProjectId, Metadata> };
+
+export const projectListAtom: Atom<ProjectListState> = (() => {
+  // keeps a cache of the data when it is loading so there's no flash
+  const LOADING = { state: "loading" } as const;
+  const unwrappedProjectList = unwrap(_projectListAtom, () => LOADING);
+  let cached: Map<ProjectId, Metadata> | undefined;
+  return atom((get): ProjectListState => {
+    try {
+      const data = get(unwrappedProjectList);
+      if (data === LOADING) {
+        if (cached) {
+          return { state: "hasData", data: cached };
+        } else {
+          return LOADING;
+        }
+      }
+      cached = data as unknown as Map<ProjectId, Metadata>;
+      return {
+        state: "hasData",
+        data: data as unknown as Map<ProjectId, Metadata>,
+      };
+    } catch (error) {
+      return { state: "hasError", error };
+    }
+  });
+})();
 
 const _updateGlobalsFromProjectDataAtom = atom(
   null,
@@ -170,8 +201,17 @@ const _deleteProjectAtom = atom(null, async (_get, set, id: ProjectId) => {
   set(fileSystemChangeIdAtom, (old) => old + 1);
 });
 
-// used for debounce
-const _inTransactionRefAtom = atom({ current: false });
+/**
+ * `null` means not doing anything.
+ */
+export type ProjectActionStatus =
+  | "creating"
+  | "importingFile"
+  | "importingBiomodel"
+  | "opening"
+  | "deleting"
+  | null;
+const projectActionStatusAtom = atom<ProjectActionStatus>(null);
 
 /**
  * Hook that exposes functions to interact with the file system.
@@ -184,7 +224,9 @@ export const useProjectActions = () => {
   const openProject = useSetAtom(_openProjectAtom);
   const closeCurrentProject = useSetAtom(_closeCurrentProjectAtom);
   const deleteProject = useSetAtom(_deleteProjectAtom);
-  const inTransactionRef = useAtomValue(_inTransactionRefAtom);
+  const [projectActionStatus, setProjectActionStatus] = useAtom(
+    projectActionStatusAtom,
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -194,8 +236,8 @@ export const useProjectActions = () => {
     code: string;
     shouldSimulateImmediately?: boolean;
   }): Promise<boolean> => {
-    if (inTransactionRef.current) return false;
-    inTransactionRef.current = true;
+    if (projectActionStatus) return false;
+    setProjectActionStatus("creating");
 
     try {
       await createNewProject(params);
@@ -208,7 +250,7 @@ export const useProjectActions = () => {
       });
       return false;
     } finally {
-      inTransactionRef.current = false;
+      setProjectActionStatus(null);
     }
   };
 
@@ -216,8 +258,8 @@ export const useProjectActions = () => {
   const createNewProjectFromBiomodel = async (
     info: BiomodelInfo,
   ): Promise<boolean> => {
-    if (inTransactionRef.current) return false;
-    inTransactionRef.current = true;
+    if (projectActionStatus) return false;
+    setProjectActionStatus("importingBiomodel");
 
     try {
       const sbml = await loadBiomodelSbml(info);
@@ -236,7 +278,7 @@ export const useProjectActions = () => {
       });
       return false;
     } finally {
-      inTransactionRef.current = false;
+      setProjectActionStatus(null);
     }
   };
 
@@ -246,8 +288,8 @@ export const useProjectActions = () => {
 
   /** @returns true if it succeeds */
   const openProjectWrapper = async (id: ProjectId): Promise<boolean> => {
-    if (inTransactionRef.current) return false;
-    inTransactionRef.current = true;
+    if (projectActionStatus) return false;
+    setProjectActionStatus("opening");
 
     try {
       await openProject(id);
@@ -260,14 +302,14 @@ export const useProjectActions = () => {
       });
       return false;
     } finally {
-      inTransactionRef.current = false;
+      setProjectActionStatus(null);
     }
   };
 
   /** @returns true if it succeeds */
   const deleteProjectWrapper = async (id: ProjectId): Promise<boolean> => {
-    if (inTransactionRef.current) return false;
-    inTransactionRef.current = true;
+    if (projectActionStatus) return false;
+    setProjectActionStatus("deleting");
 
     try {
       await deleteProject(id);
@@ -280,7 +322,7 @@ export const useProjectActions = () => {
       });
       return false;
     } finally {
-      inTransactionRef.current = false;
+      setProjectActionStatus(null);
     }
   };
 
@@ -349,6 +391,7 @@ export const useProjectActions = () => {
     deleteProject: deleteProjectWrapper,
     promptProjectFromFile: promptProjectFromFile,
     closeCurrentProject: closeCurrentProjectWrapper,
+    projectActionStatus: projectActionStatus,
     FileInput: FileInput,
   };
 };

@@ -7,7 +7,6 @@ import {
   type BiomodelInfo,
 } from "@/features/biomodels";
 import SearchItem from "./SearchItem";
-import PulseLoader from "@/components/PulseLoader";
 import { useProjectActions } from "@/globals/project";
 
 const LIMIT = 50;
@@ -41,11 +40,7 @@ const SearchSection = () => {
         onChange={setSearchTerm}
         placeholder="Model Name or Number"
       />
-      {isLoading ? (
-        <div className={styles.loading}>
-          <PulseLoader />
-        </div>
-      ) : error ? (
+      {isLoading ? null : error ? (
         <p className={styles.noResults}>Error: {error}</p>
       ) : biomodels.length === 0 ? (
         <p className={styles.noResults}>No results</p>

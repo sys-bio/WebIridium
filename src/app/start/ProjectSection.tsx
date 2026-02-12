@@ -6,7 +6,6 @@ import buttonStyles from "@/components/Button.module.css";
 
 import ProjectItem from "./ProjectItem";
 import PlusIcon from "@/assets/icons/PlusIcon.svg?react";
-import PulseLoader from "@/components/PulseLoader";
 import { errorToDisplayString } from "@/features/formatUtils";
 import type { ProjectId } from "@/features/projectData";
 import { projectListAtom, useProjectActions } from "@/globals/project";
@@ -18,6 +17,7 @@ const ProjectSection = () => {
     openProject,
     deleteProject,
     promptProjectFromFile,
+    projectActionStatus,
     FileInput,
   } = useProjectActions();
 
@@ -49,12 +49,14 @@ const ProjectSection = () => {
           <button
             className={buttonStyles.default}
             onClick={() => promptProjectFromFile()}
+            disabled={projectActionStatus !== null}
           >
             Import File
           </button>
           <button
             className={buttonStyles.primary}
             onClick={() => createNewProject()}
+            disabled={projectActionStatus !== null}
           >
             <PlusIcon aria-hidden width="1em" height="1em" />
             New Project
@@ -62,11 +64,8 @@ const ProjectSection = () => {
         </div>
       </h3>
       <div className={styles.modelList}>
-        {projectList.state === "loading" ? (
-          <div className={styles.loaderContainer}>
-            <PulseLoader />
-          </div>
-        ) : projectList.state === "hasError" ? (
+        {projectList.state === "loading" ? null : projectList.state ===
+          "hasError" ? (
           <p className={styles.error}>
             Error: {errorToDisplayString(projectList.error)}
           </p>

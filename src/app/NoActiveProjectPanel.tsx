@@ -5,7 +5,7 @@ import buttonStyles from "@/components/Button.module.css";
 import PlusIcon from "@/assets/icons/PlusIcon.svg?react";
 
 const NoActiveProjectPanel = () => {
-  const { createNewProject } = useProjectActions();
+  const { createNewProject, projectActionStatus } = useProjectActions();
 
   return (
     <div className={styles.panel}>
@@ -13,6 +13,7 @@ const NoActiveProjectPanel = () => {
       <button
         className={buttonStyles.primary}
         onClick={() => createNewProject()}
+        disabled={projectActionStatus !== null}
       >
         <PlusIcon aria-hidden width="1em" height="1em" />
         New Project
