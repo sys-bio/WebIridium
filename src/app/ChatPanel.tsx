@@ -643,6 +643,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                               data-testid="latex-math"
                             >
                               {children}
+                            {/* @ts-expect-error: math is not in JSX types */}
                             </math>
                           );
                         },
