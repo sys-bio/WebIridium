@@ -848,3 +848,15 @@
 .danger-button:hover {
   opacity: 0.9;
 }
+
+.math-equation {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+.math-equation[display="block"] {
+  display: block;
+  margin: var(--spacing-2) 0;
+  scrollbar-width: thin;
+}
