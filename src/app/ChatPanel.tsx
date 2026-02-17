@@ -11,18 +11,20 @@ import {
   DEFAULT_SYSTEM_PROMPT,
   modelAtom,
   AVAILABLE_MODELS,
+  MASTER_PROMPT,
 } from "@/globals/chat";
 import { editorContentAtom } from "@/globals/model";
 import styles from "./ChatPanel.module.css";
 import PanelTitle from "../components/PanelTitle";
 import PulseLoader from "../components/PulseLoader";
-import ReactMarkdown from "react-markdown";
-import rehypeSanitize from "rehype-sanitize";
-import remarkGfm from "remark-gfm";
-
 import { timeToAgoText } from "@/features/formatUtils";
 import { getVerboseError } from "@/features/chat/errorUtils";
 import { Tooltip } from "@/components/Tooltip";
+import ReactMarkdown from "react-markdown";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 import SettingsIcon from "@/assets/icons/SettingsIcon.svg?react";
 import HistoryIcon from "@/assets/icons/HistoryIcon.svg?react";
@@ -295,7 +297,16 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       // If the last message is a completed LLM response, scroll to its top
       requestAnimationFrame(() => {
         const lastMessageEl = el.lastElementChild;
-        lastMessageEl?.scrollIntoView({ block: "start", behavior: "smooth" });
+        if (lastMessageEl) {
+          const targetTop = lastMessageEl.getBoundingClientRect().top;
+          const containerTop = el.getBoundingClientRect().top;
+          const scrollTop = targetTop - containerTop + el.scrollTop;
+          if (el.scrollTo) {
+            el.scrollTo({ top: scrollTop, behavior: "smooth" });
+          } else {
+            el.scrollTop = scrollTop;
+          }
+        }
       });
     } else {
       // Otherwise (user message or thinking), scroll to bottom
@@ -389,7 +400,7 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
           model: model,
           input: convo,
           max_output_tokens: 1024,
-          instructions: systemPrompt,
+          instructions: `${MASTER_PROMPT}\n\n${systemPrompt}`,
         }),
       });
 
@@ -547,8 +558,31 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                     <PulseLoader size="8px" spacing="6px" />
                   ) : m.role === "llm" ? (
                     <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeSanitize]}
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[
+                        [
+                          rehypeSanitize,
+                          {
+                            ...defaultSchema,
+                            attributes: {
+                              ...defaultSchema.attributes,
+                              div: [
+                                ...(defaultSchema.attributes?.div || []),
+                                ["className", "math", "math-display"],
+                              ],
+                              span: [
+                                ...(defaultSchema.attributes?.span || []),
+                                ["className", "math", "math-inline"],
+                              ],
+                              code: [
+                                ...(defaultSchema.attributes?.code || []),
+                                "className",
+                              ],
+                            },
+                          },
+                        ],
+                        [rehypeKatex, { output: "mathml" }],
+                      ]}
                       components={{
                         code({
                           node,
@@ -594,6 +628,22 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                                 <code {...props}>{children}</code>
                               </div>
                             </div>
+                          );
+                        },
+                        // @ts-expect-error: math is not in Components type
+                        math({ node, className, children, ...props }: any) {
+                          return (
+                            // @ts-expect-error: math is not in JSX types
+                            <math
+                              {...props}
+                              className={clsx(
+                                className as string,
+                                styles.mathEquation,
+                              )}
+                              data-testid="latex-math"
+                            >
+                              {children}
+                            </math>
                           );
                         },
                       }}

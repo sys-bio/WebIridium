@@ -104,4 +104,39 @@ describe("ChatPanel", () => {
       expect(screen.getByText("Error: Something exploded")).toBeInTheDocument();
     });
   });
+
+  it("should render LaTeX as MathML with correct attributes", async () => {
+    await setupChatWithKey();
+
+    // Mock API response with LaTeX content
+    const mockResponse = {
+      output: [
+        {
+          type: "message",
+          content: [
+            {
+              text: "Here is math: $$ E=mc^2 $$",
+            },
+          ],
+        },
+      ],
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockResponse),
+    });
+
+    const input = screen.getByLabelText("Message input");
+    await userEvent.type(input, "Show me math");
+    await userEvent.click(screen.getByLabelText("Send message"));
+
+    const mathElement = await screen.findByTestId("latex-math");
+    // eslint-disable-next-line jest-dom/prefer-in-document
+    expect(mathElement).toBeTruthy();
+    expect(mathElement.tagName.toLowerCase()).toBe("math");
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
+    expect(mathElement.getAttribute("class")).toMatch(/mathEquation/);
+  });
 });

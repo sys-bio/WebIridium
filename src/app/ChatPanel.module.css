@@ -12,7 +12,7 @@
 .chat-box {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   background: var(--color-layer1-bg);
   border-radius: var(--border-radius);
   min-height: 0;
@@ -145,6 +145,13 @@
 .message-bubble td {
   padding: 0.25rem 0.5rem;
   text-align: left;
+}
+
+.message-bubble :global(.katex-display) {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
 
 .message-bubble a {
@@ -691,4 +698,16 @@
     var(--color-error) 15%,
     transparent
   ) !important;
+}
+
+.math-equation {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+.math-equation[display="block"] {
+  display: block;
+  margin: var(--spacing-2) 0;
+  scrollbar-width: thin;
 }

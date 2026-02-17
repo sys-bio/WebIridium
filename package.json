@@ -28,14 +28,17 @@
     "echarts-gl": "^2.0.9",
     "jotai": "^2.12.4",
     "jspdf": "^3.0.3",
+    "katex": "^0.16.28",
     "monaco-editor": "^0.52.2",
     "radix-ui": "^1.4.2",
     "react": "^19.2.0",
     "react-colorful": "^5.6.1",
     "react-dom": "^19.2.0",
     "react-markdown": "^9.0.3",
+    "rehype-katex": "^7.0.1",
     "rehype-sanitize": "^6.0.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
@@ -44,6 +47,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/chroma-js": "^3.1.1",
+    "@types/katex": "^0.16.8",
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

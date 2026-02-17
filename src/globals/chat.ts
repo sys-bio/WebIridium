@@ -6,7 +6,10 @@ import { atomWithStorage } from "jotai/utils";
 export const apiKeyAtom = atomWithStorage<string | null>("chat_apiKey", null);
 
 export const DEFAULT_SYSTEM_PROMPT =
-  "You are a systems biologist that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony";
+  "You are a systems biologist assistant that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony";
+
+export const MASTER_PROMPT =
+  "You should always use LaTeX for math equations. You can use inline math like $E=mc^2$ or block math like $$E=mc^2$$.";
 
 export const systemPromptAtom = atomWithStorage<string>(
   "chat_systemPrompt",
