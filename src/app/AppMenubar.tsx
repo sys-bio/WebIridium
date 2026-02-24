@@ -43,30 +43,36 @@ import {
   runParameterScanAtom,
   simulateTimeCourseAtom,
 } from "@/globals/simulation";
+import { simulatorAtom } from "@/globals/simulator";
 
 const RunMenu = () => {
   const isSimulating = useAtomValue(isSimulatingAtom);
   const hasActiveProject = useAtomValue(hasActiveProjectAtom);
+  const simulator = useAtomValue(simulatorAtom);
   const cancelSimulaton = useSetAtom(cancelSimulationAtom);
   const simulateTimeCourse = useSetAtom(simulateTimeCourseAtom);
   const computeSteadyState = useSetAtom(computeSteadyStateAtom);
   const runParameterScan = useSetAtom(runParameterScanAtom);
 
+  const disabled = isSimulating || !hasActiveProject;
+
   return (
     <MenubarMenu name="Run">
       <MenubarItem
         name="Simulate Time Course"
-        disabled={isSimulating || !hasActiveProject}
+        disabled={disabled}
         onSelect={simulateTimeCourse}
       />
-      <MenubarItem
-        name="Compute Steady State"
-        disabled={isSimulating || !hasActiveProject}
-        onSelect={computeSteadyState}
-      />
+      {simulator.capabilities.canRunSteadyState && (
+        <MenubarItem
+          name="Compute Steady State"
+          disabled={disabled}
+          onSelect={computeSteadyState}
+        />
+      )}
       <MenubarItem
         name="Run Parameter Scan"
-        disabled={isSimulating || !hasActiveProject}
+        disabled={disabled}
         onSelect={runParameterScan}
       />
 
