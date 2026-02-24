@@ -3,7 +3,14 @@ import { atomWithStorage } from "jotai/utils";
 
 // TODO: Put all the settings under one chat settings object
 
-export const apiKeyAtom = atomWithStorage<string | null>("chat_apiKey", null);
+export const openAiApiKeyAtom = atomWithStorage<string | null>(
+  "chat_apiKey",
+  null,
+);
+export const claudeApiKeyAtom = atomWithStorage<string | null>(
+  "chat_claudeApiKey",
+  null,
+);
 
 export const DEFAULT_SYSTEM_PROMPT =
   "You are a systems biologist assistant that specializes in a biological compound and reaction modeling language named Antimony that is based off of SBML, help the user debug and analyze their models that are written in Antimony";
@@ -17,13 +24,20 @@ export const systemPromptAtom = atomWithStorage<string>(
 );
 
 export const AVAILABLE_MODELS = [
-  { id: "gpt-5.2", name: "GPT-5.2" },
-  { id: "gpt-5.1", name: "GPT-5.1" },
-  { id: "gpt-5", name: "GPT-5" },
-  { id: "gpt-5-mini", name: "GPT-5 mini" },
-  { id: "gpt-5-nano", name: "GPT-5 nano" },
-  { id: "gpt-4o", name: "GPT-4o" },
-  { id: "gpt-4o-mini", name: "GPT-4o Mini" },
+  { id: "gpt-5.2", name: "GPT-5.2", provider: "openai" },
+  { id: "gpt-5.1", name: "GPT-5.1", provider: "openai" },
+  { id: "gpt-5", name: "GPT-5", provider: "openai" },
+  { id: "gpt-5-mini", name: "GPT-5 mini", provider: "openai" },
+  { id: "gpt-5-nano", name: "GPT-5 nano", provider: "openai" },
+  { id: "gpt-4o", name: "GPT-4o", provider: "openai" },
+  { id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "openai" },
+  { id: "claude-opus-4-6", name: "Claude 4.6 Opus", provider: "anthropic" },
+  { id: "claude-sonnet-4-6", name: "Claude 4.6 Sonnet", provider: "anthropic" },
+  {
+    id: "claude-haiku-4-5-20251001",
+    name: "Claude 4.5 Haiku",
+    provider: "anthropic",
+  },
 ];
 
 export const modelAtom = atom<string>("gpt-4o");
@@ -116,7 +130,7 @@ export const migrateFromLegacyDbAtom = atom(null, async (_get, set) => {
     const data = await requestSavedDataForMigration();
     if (data && data.workspace) {
       if (data.workspace.apiKey) {
-        set(apiKeyAtom, data.workspace.apiKey);
+        set(openAiApiKeyAtom, data.workspace.apiKey);
       }
       if (data.workspace.chatSystemPrompt) {
         set(systemPromptAtom, data.workspace.chatSystemPrompt);

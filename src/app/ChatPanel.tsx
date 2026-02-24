@@ -6,7 +6,8 @@ import {
   activeConversationAtom,
   upsertActiveConversationAtom,
   migrateFromLegacyDbAtom,
-  apiKeyAtom,
+  openAiApiKeyAtom,
+  claudeApiKeyAtom,
   systemPromptAtom,
   DEFAULT_SYSTEM_PROMPT,
   modelAtom,
@@ -107,22 +108,110 @@ const ConversationItem = ({
   );
 };
 
-const ChatSettings = ({
+interface ApiKeyEntryFieldProps {
+  label: string;
+  apiKey: string | null;
+  placeholder: string;
+  disabled: boolean;
+  onSave: (key: string) => Promise<void>;
+  onClear: () => void;
+  style?: React.CSSProperties;
+}
+
+const ApiKeyEntryField = ({
+  label,
   apiKey,
-  setApiKey,
+  placeholder,
+  disabled,
+  onSave,
+  onClear,
+  style,
+}: ApiKeyEntryFieldProps) => {
+  const [input, setInput] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (!input) return;
+    setIsVerifying(true);
+    setError(null);
+    try {
+      await onSave(input);
+      setInput("");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : `Failed to verify ${label}`,
+      );
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  return (
+    <div style={style}>
+      <div
+        className={styles.settingsLabel}
+        style={{ marginBottom: "var(--spacing-1)" }}
+      >
+        {label}
+      </div>
+      {apiKey ? (
+        <div className={styles.keyStatus}>
+          <div className={styles.keyActive}>
+            <CheckIcon width="1em" height="1em" />
+            <span>{label} is set</span>
+          </div>
+          <button
+            className={styles.clearKeyButton}
+            onClick={onClear}
+            disabled={disabled}
+          >
+            Clear Key
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className={styles.apiKeyRow}>
+            <input
+              type="password"
+              className={styles.apiKeyInput}
+              placeholder={placeholder}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              aria-label={label}
+            />
+            <button
+              className={styles.apiKeyButton}
+              onClick={handleSave}
+              disabled={!input || isVerifying || disabled}
+            >
+              {isVerifying ? "Verifying..." : "Save"}
+            </button>
+          </div>
+          {error && (
+            <div className={styles.verificationError}>Error: {error}</div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+const ChatSettings = ({
+  openAiApiKey,
+  setOpenAiApiKey,
+  claudeApiKey,
+  setClaudeApiKey,
   onClose,
   waitingForReply,
 }: {
-  apiKey: string | null;
-  setApiKey: (key: string | null) => void;
+  openAiApiKey: string | null;
+  setOpenAiApiKey: (key: string | null) => void;
+  claudeApiKey: string | null;
+  setClaudeApiKey: (key: string | null) => void;
   onClose: () => void;
   waitingForReply: boolean;
 }) => {
-  const [keyInput, setKeyInput] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationError, setVerificationError] = useState<string | null>(
-    null,
-  );
   const [systemPrompt, setSystemPrompt] = useAtom(systemPromptAtom);
   const [promptInput, setPromptInput] = useState(systemPrompt);
 
@@ -131,34 +220,43 @@ const ChatSettings = ({
     setPromptInput(systemPrompt);
   }, [systemPrompt]);
 
-  const handleSaveKey = async () => {
-    if (!keyInput) return;
-
-    setIsVerifying(true);
-    setVerificationError(null);
-
-    try {
-      const resp = await fetch("https://api.openai.com/v1/models", {
-        headers: { Authorization: `Bearer ${keyInput}` },
-      });
-
-      if (!resp.ok) {
-        throw new Error(`Invalid API Key (Status ${resp.status})`);
-      }
-
-      setApiKey(keyInput);
-      setKeyInput("");
-    } catch (err: unknown) {
-      setVerificationError(
-        err instanceof Error ? err.message : "Failed to verify API key",
-      );
-    } finally {
-      setIsVerifying(false);
+  const verifyAndSaveOpenAiKey = async (keyInput: string) => {
+    if (!keyInput.startsWith("sk-")) {
+      throw new Error("Invalid API Key format (must start with sk-)");
     }
+
+    const resp = await fetch("https://api.openai.com/v1/models", {
+      headers: { Authorization: `Bearer ${keyInput}` },
+    });
+
+    if (!resp.ok) {
+      throw new Error(`Invalid API Key (Status ${resp.status})`);
+    }
+
+    setOpenAiApiKey(keyInput);
   };
 
-  const handleClearKey = () => {
-    setApiKey(null);
+  const verifyAndSaveClaudeKey = async (keyInput: string) => {
+    if (!keyInput.startsWith("sk-")) {
+      throw new Error("Invalid API Key format (must start with sk-)");
+    }
+
+    const resp = await fetch("https://api.anthropic.com/v1/models", {
+      headers: {
+        "x-api-key": keyInput,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(
+        `Invalid API Key (Status ${resp.status}): ${text.slice(0, 100)}`,
+      );
+    }
+
+    setClaudeApiKey(keyInput);
   };
 
   const handleSavePrompt = () => {
@@ -180,48 +278,28 @@ const ChatSettings = ({
       </div>
 
       <div className={styles.settingsSection}>
-        <div className={styles.settingsLabel}>OpenAI API Key</div>
-        {apiKey ? (
-          <div className={styles.keyStatus}>
-            <div className={styles.keyActive}>
-              <CheckIcon width="1em" height="1em" />
-              <span>API Key is set</span>
-            </div>
-            <button
-              className={styles.clearKeyButton}
-              onClick={handleClearKey}
-              disabled={waitingForReply}
-            >
-              Clear Key
-            </button>
-          </div>
-        ) : (
-          <div className={styles.apiKeyRow}>
-            <input
-              type="password"
-              className={styles.apiKeyInput}
-              placeholder="Enter OpenAI API key"
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-              aria-label="OpenAI API key"
-            />
-            <button
-              className={styles.apiKeyButton}
-              onClick={handleSaveKey}
-              disabled={!keyInput}
-            >
-              {isVerifying ? "Verifying..." : "Save"}
-            </button>
-          </div>
-        )}
+        <ApiKeyEntryField
+          label="OpenAI API Key"
+          apiKey={openAiApiKey}
+          placeholder="Enter OpenAI API key"
+          disabled={waitingForReply}
+          onSave={verifyAndSaveOpenAiKey}
+          onClear={() => setOpenAiApiKey(null)}
+        />
+
+        <ApiKeyEntryField
+          label="Claude API Key"
+          apiKey={claudeApiKey}
+          placeholder="Enter Claude API key"
+          disabled={waitingForReply}
+          onSave={verifyAndSaveClaudeKey}
+          onClear={() => setClaudeApiKey(null)}
+          style={{ marginTop: "0.25rem" }}
+        />
+
         <div className={styles.settingsNote}>
           Your API key is stored locally and never shared.
         </div>
-        {verificationError && (
-          <div className={styles.verificationError}>
-            Error: {verificationError}
-          </div>
-        )}
       </div>
 
       <div className={styles.settingsSection}>
@@ -262,9 +340,12 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   const [includeModel, setIncludeModel] = useState(true);
   const [waitingForReply, setWaitingForReply] = useState(false);
 
-  const [apiKey, setApiKey] = useAtom(apiKeyAtom);
+  const [openAiApiKey, setOpenAiApiKey] = useAtom(openAiApiKeyAtom);
+  const [claudeApiKey, setClaudeApiKey] = useAtom(claudeApiKeyAtom);
   const [systemPrompt] = useAtom(systemPromptAtom);
   const [model, setModel] = useAtom(modelAtom);
+  const activeModelObj = AVAILABLE_MODELS.find((m) => m.id === model);
+  const isClaude = activeModelObj?.provider === "anthropic";
   const editorContent = useAtomValue(editorContentAtom);
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -346,7 +427,9 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
     const trimmed = input.trim();
     if (!trimmed) return;
     if (waitingForReply) return;
-    if (!apiKey) return;
+
+    if (isClaude && !claudeApiKey) return;
+    if (!isClaude && !openAiApiKey) return;
 
     const userMsg: Message = {
       id: String(Date.now()),
@@ -390,30 +473,60 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
         lastUserMsg.content += contextMessage;
       }
 
-      const resp = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: model,
-          input: convo,
-          max_output_tokens: 1024,
-          instructions: `${MASTER_PROMPT}\n\n${systemPrompt}`,
-        }),
-      });
+      let reply = "(no response)";
 
-      if (!resp.ok) {
-        const body = await resp.text();
-        throw new Error(`OpenAI error ${resp.status}: ${body}`);
+      if (isClaude) {
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": claudeApiKey!,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true",
+          },
+          body: JSON.stringify({
+            model: model,
+            system: `${MASTER_PROMPT}\n\n${systemPrompt}`,
+            messages: convo,
+            max_tokens: 1024,
+          }),
+        });
+
+        if (!resp.ok) {
+          const body = await resp.text();
+          throw new Error(`Anthropic error ${resp.status}: ${body}`);
+        }
+
+        const data = (await resp.json()) as {
+          content?: Array<{ type: string; text?: string }>;
+        };
+        const content = data?.content?.find((i) => i.type === "text")?.text;
+        reply = content ?? "(no response)";
+      } else {
+        const resp = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${openAiApiKey}`,
+          },
+          body: JSON.stringify({
+            model: model,
+            input: convo,
+            max_output_tokens: 1024,
+            instructions: `${MASTER_PROMPT}\n\n${systemPrompt}`,
+          }),
+        });
+
+        if (!resp.ok) {
+          const body = await resp.text();
+          throw new Error(`OpenAI error ${resp.status}: ${body}`);
+        }
+
+        const data = (await resp.json()) as OpenAiResponse;
+        reply =
+          data?.output?.find((i) => i.type === "message")?.content[0]?.text ??
+          "(no response)";
       }
-
-      const data = (await resp.json()) as OpenAiResponse;
-
-      const reply =
-        data?.output?.find((i) => i.type === "message")?.content[0]?.text ??
-        "(no response)";
       finalizedMessages = finalizedMessages.map((m) =>
         m.id === placeholderId ? { ...m, text: reply, thinking: false } : m,
       );
@@ -502,8 +615,10 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       <div className={styles.chatBox} role="region" aria-label="Chat panel">
         {showSettings ? (
           <ChatSettings
-            apiKey={apiKey}
-            setApiKey={setApiKey}
+            openAiApiKey={openAiApiKey}
+            setOpenAiApiKey={setOpenAiApiKey}
+            claudeApiKey={claudeApiKey}
+            setClaudeApiKey={setClaudeApiKey}
             onClose={() => setShowSettings(false)}
             waitingForReply={waitingForReply}
           />
@@ -660,14 +775,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
           </div>
 
           <div className={styles.inputRow}>
-            {!apiKey ? (
-              <div className={styles.overlay} aria-hidden="true">
-                <div className={styles.overlayContent}>
-                  <div>Please enter an OpenAI API key in settings</div>
-                </div>
-              </div>
-            ) : null}
-
             <div className={styles.inputColumn}>
               <div
                 className={clsx(
@@ -675,6 +782,17 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                   isContextActive && styles.inputWrapperConnected,
                 )}
               >
+                {(!isClaude && !openAiApiKey) || (isClaude && !claudeApiKey) ? (
+                  <div className={styles.overlay} aria-hidden="true">
+                    <div className={styles.overlayContent}>
+                      <div>
+                        Please enter {isClaude ? "a Claude" : "an OpenAI"} API
+                        key in settings
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div
                   className={clsx(
                     styles.contextBar,
@@ -705,7 +823,10 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                     setInput(e.target.value);
                   }}
                   onKeyDown={handleKeyDown}
-                  disabled={waitingForReply || !apiKey}
+                  disabled={
+                    waitingForReply ||
+                    (isClaude ? !claudeApiKey : !openAiApiKey)
+                  }
                 />
               </div>
               <div className={styles.inputToolbar}>
@@ -724,7 +845,11 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                   className={styles.sendButton}
                   aria-label="Send message"
                   onClick={sendMessage}
-                  disabled={waitingForReply || !apiKey || !input.trim()}
+                  disabled={
+                    waitingForReply ||
+                    (isClaude ? !claudeApiKey : !openAiApiKey) ||
+                    !input.trim()
+                  }
                 >
                   <SendIcon width="1em" height="1em" />
                 </button>

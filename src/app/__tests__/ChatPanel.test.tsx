@@ -31,7 +31,7 @@ describe("ChatPanel", () => {
       json: () => Promise.resolve({}),
     });
 
-    await userEvent.click(screen.getByText("Save"));
+    await userEvent.click(screen.getAllByText("Save")[0]);
 
     await waitFor(() => {
       expect(screen.queryByText("Verifying...")).not.toBeInTheDocument();
