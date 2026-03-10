@@ -5,6 +5,7 @@ import {
   chatHistoryAtom,
   activeConversationAtom,
   upsertActiveConversationAtom,
+  deleteConversationAtom,
   migrateFromLegacyDbAtom,
   openAiApiKeyAtom,
   claudeApiKeyAtom,
@@ -32,6 +33,12 @@ import HistoryIcon from "@/assets/icons/HistoryIcon.svg?react";
 import PlusIcon from "@/assets/icons/PlusIcon.svg?react";
 import CheckIcon from "@/assets/icons/CheckIcon.svg?react";
 import SendIcon from "@/assets/icons/SendIcon.svg?react";
+import TrashIcon from "@/assets/icons/TrashIcon.svg?react";
+import DownloadIcon from "@/assets/icons/DownloadIcon.svg?react";
+import UploadIcon from "@/assets/icons/UploadIcon.svg?react";
+import PencilIcon from "@/assets/icons/PencilIcon.svg?react";
+import CrossIcon from "@/assets/icons/CrossIcon.svg?react";
+import IconButton from "@/components/IconButton";
 
 import Select from "@/components/input/Select";
 
@@ -359,7 +366,13 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   );
 
   const upsertActiveConversation = useSetAtom(upsertActiveConversationAtom);
+  const deleteConversation = useSetAtom(deleteConversationAtom);
   const migrateChatData = useSetAtom(migrateFromLegacyDbAtom);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [renameInput, setRenameInput] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     void migrateChatData();
@@ -421,6 +434,89 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   const toggleSettings = () => {
     setShowSettings((show) => !show);
     setShowHistory(false);
+  };
+
+  const handleDeleteConversation = () => {
+    if (!activeConversation) return;
+    deleteConversation(activeConversation.id);
+    setMessages([]);
+    setShowDeleteConfirm(false);
+  };
+
+  const confirmRename = () => {
+    const input = renameInputRef.current;
+    if (input && activeConversation) {
+      const trimmed = input.value.trim();
+      if (trimmed) {
+        upsertActiveConversation({
+          messages: activeConversation.messages,
+          title: trimmed,
+        });
+      }
+      input.blur();
+    }
+  };
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === "Enter") {
+      confirmRename();
+    }
+  };
+
+  const handleExportConversation = () => {
+    if (!activeConversation) return;
+    const json = JSON.stringify(activeConversation, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${activeConversation.title ?? "conversation"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportConversation = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string) as Record<
+          string,
+          unknown
+        >;
+        if (!data.id || !data.messages || !data.unixTimestampMs) {
+          alert(
+            "Invalid conversation file: missing required fields (id, messages, unixTimestampMs).",
+          );
+          return;
+        }
+        const conv =
+          data as unknown as import("@/globals/chat").ChatConversation;
+        setActiveConversation(null);
+        upsertActiveConversation({
+          messages: conv.messages,
+          title: conv.title,
+        });
+        setMessages(
+          conv.messages.map((m) => ({
+            id: m.id,
+            role: m.role,
+            text: m.text,
+            isError: m.isError,
+          })),
+        );
+      } catch {
+        alert(
+          "Failed to parse conversation file. Please ensure it is valid JSON.",
+        );
+      }
+    };
+    reader.readAsText(file);
+    // Reset so the same file can be re-imported
+    e.target.value = "";
   };
 
   const sendMessage = async () => {
@@ -578,6 +674,44 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
         <div>
           <button
             className={styles.titleButton}
+            aria-label="Delete Conversation"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={!activeConversation || waitingForReply}
+          >
+            <Tooltip text="Delete Conversation">
+              <TrashIcon height="0.75em" width="0.75em" />
+            </Tooltip>
+          </button>
+          <button
+            className={styles.titleButton}
+            aria-label="Export Conversation"
+            onClick={handleExportConversation}
+            disabled={!activeConversation || waitingForReply}
+          >
+            <Tooltip text="Export Conversation">
+              <DownloadIcon height="0.75em" width="0.75em" />
+            </Tooltip>
+          </button>
+          <button
+            className={styles.titleButton}
+            aria-label="Import Conversation"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={waitingForReply}
+          >
+            <Tooltip text="Import Conversation">
+              <UploadIcon height="0.75em" width="0.75em" />
+            </Tooltip>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: "none" }}
+            onChange={handleImportConversation}
+            aria-label="Import conversation file"
+          />
+          <button
+            className={styles.titleButton}
             aria-expanded={showHistory}
             aria-label="Chat History"
             onClick={toggleHistory}
@@ -611,6 +745,28 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
           </button>
         </div>
       </div>
+
+      {showDeleteConfirm && (
+        <div className={styles.confirmOverlay}>
+          <div className={styles.confirmDialog}>
+            <p>Are you sure you want to delete this conversation?</p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.dangerButton}
+                onClick={handleDeleteConversation}
+              >
+                Delete
+              </button>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={styles.chatBox} role="region" aria-label="Chat panel">
         {showSettings ? (
@@ -651,6 +807,55 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
         ) : null}
 
         <div className={styles.chatContent}>
+          {activeConversation?.title && (
+            <div className={styles.conversationTitleBar}>
+              {renameInput === null ? (
+                <button
+                  className={styles.conversationTitleTrigger}
+                  onClick={() => setRenameInput(activeConversation.title ?? "")}
+                >
+                  <span className={styles.conversationTitleText}>
+                    {activeConversation.title}
+                  </span>
+                  <PencilIcon
+                    className={styles.conversationTitlePencil}
+                    width="0.85em"
+                    height="0.85em"
+                  />
+                </button>
+              ) : (
+                <div className={styles.conversationTitleInputContainer}>
+                  <input
+                    ref={renameInputRef}
+                    type="text"
+                    placeholder="Conversation name"
+                    className={styles.conversationTitleInput}
+                    autoFocus
+                    autoComplete="off"
+                    value={renameInput}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={() => setRenameInput(null)}
+                    onChange={(e) => setRenameInput(e.target.value)}
+                    onKeyDown={handleRenameKeyDown}
+                  />
+                  <IconButton
+                    label="Confirm"
+                    onClick={confirmRename}
+                    onPointerDown={(e) => e.preventDefault()}
+                  >
+                    <CheckIcon width="1em" height="1em" />
+                  </IconButton>
+                  <IconButton
+                    label="Cancel"
+                    onClick={() => renameInputRef.current?.blur()}
+                    onPointerDown={(e) => e.preventDefault()}
+                  >
+                    <CrossIcon width="1em" height="1em" />
+                  </IconButton>
+                </div>
+              )}
+            </div>
+          )}
           <div className={styles.messages} ref={messagesRef}>
             {messages.map((m) => (
               <div

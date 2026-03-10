@@ -61,6 +61,9 @@
   padding: var(--spacing-4);
   border-bottom: 1px solid var(--color-layer2-border);
   background: color-mix(in oklch, var(--color-layer1-bg) 95%, transparent);
+  overflow-y: auto;
+  height: 150%;
+  scrollbar-width: thin;
 }
 
 .settings-row {
@@ -424,6 +427,68 @@
   min-height: 0;
 }
 
+.conversation-title-bar {
+  border-bottom: 1px solid var(--color-layer2-border);
+  flex-shrink: 0;
+}
+
+.conversation-title-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--color-layer1-fg);
+  font-size: var(--font-size-small);
+  font-weight: bold;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+
+  &:hover {
+    background: var(--color-ghost-button-hover-bg);
+  }
+
+  &:active {
+    background: var(--color-ghost-button-active-bg);
+  }
+}
+
+.conversation-title-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+}
+
+.conversation-title-pencil {
+  color: var(--color-layer1-fg-dim);
+  flex-shrink: 0;
+}
+
+.conversation-title-input-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
+.conversation-title-input {
+  flex: 1;
+  color: var(--color-input-fg);
+  background-color: var(--color-input-bg);
+  border-radius: var(--border-radius);
+  border: var(--border-input);
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-small);
+
+  &:focus {
+    outline: var(--border-input-focused);
+    border: var(--border-input-focused);
+  }
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -731,4 +796,57 @@
   display: block;
   margin: var(--spacing-2) 0;
   scrollbar-width: thin;
+}
+
+.title-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklch, var(--color-layer1-bg) 40%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.confirm-dialog {
+  background: var(--color-layer1-bg);
+  border: 1px solid var(--color-layer2-border);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-4);
+  box-shadow: var(--shadow-medium);
+  max-width: 320px;
+  text-align: center;
+}
+
+.confirm-dialog p {
+  margin: 0 0 var(--spacing-3);
+  color: var(--color-layer1-fg);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  justify-content: center;
+}
+
+.danger-button {
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--border-radius);
+  font-size: 0.9em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: var(--color-error);
+  color: var(--color-accent-fg);
+  transition: opacity 0.2s;
+}
+
+.danger-button:hover {
+  opacity: 0.9;
 }
