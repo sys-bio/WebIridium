@@ -153,6 +153,21 @@ export const updateAllChatHistoryAtom = atom(
   },
 );
 
+export const deleteConversationAtom = atom(
+  null,
+  (get, set, conversationId: string) => {
+    const history = get(_chatHistoryAtom);
+    const active = get(activeConversationAtom);
+    set(
+      _chatHistoryAtom,
+      history.filter((c) => c.id !== conversationId),
+    );
+    if (active?.id === conversationId) {
+      set(activeConversationAtom, null);
+    }
+  },
+);
+
 export const chatHistoryAtom = atom((get) => get(_chatHistoryAtom));
 
 // Active conversation selected for loading into the chat panel
