@@ -42,46 +42,78 @@
     animation: slideOut 200ms ease-out;
   }
   :global([data-theme="Light"]) &[data-type="error"] {
-    background-color: color-mix(in oklch, var(--color-error) 18%, white);
+    background-color: color-mix(
+      in oklch,
+      var(--color-error) 18%,
+      var(--color-white-bg)
+    );
   }
 
   :global([data-theme="Light"]) &[data-type="success"] {
-    background-color: color-mix(in oklch, var(--color-success) 18%, white);
+    background-color: color-mix(
+      in oklch,
+      var(--color-success) 18%,
+      var(--color-white-bg)
+    );
   }
 
   :global([data-theme="Light"]) &[data-type="warning"] {
-    background-color: color-mix(in oklch, var(--color-warning) 18%, white);
+    background-color: color-mix(
+      in oklch,
+      var(--color-warning) 18%,
+      var(--color-white-bg)
+    );
   }
 
   :global([data-theme="Light"]) &[data-type="info"] {
-    background-color: color-mix(in oklch, var(--color-info) 18%, white);
+    background-color: color-mix(
+      in oklch,
+      var(--color-info) 18%,
+      var(--color-white-bg)
+    );
   }
   :global([data-theme="Dark"]) &[data-type="error"],
   :global([data-theme="Very Dark"]) &[data-type="error"],
   :global([data-theme="Catpuccin"]) &[data-type="error"],
   :global([data-theme="Monokai"]) &[data-type="error"] {
-    background-color: color-mix(in oklch, var(--color-error) 35%, black);
+    background-color: color-mix(
+      in oklch,
+      var(--color-error) 35%,
+      var(--color-black-bg)
+    );
   }
 
   :global([data-theme="Dark"]) &[data-type="success"],
   :global([data-theme="Very Dark"]) &[data-type="success"],
   :global([data-theme="Catpuccin"]) &[data-type="success"],
   :global([data-theme="Monokai"]) &[data-type="success"] {
-    background-color: color-mix(in oklch, var(--color-success) 35%, black);
+    background-color: color-mix(
+      in oklch,
+      var(--color-success) 35%,
+      --color-black-bg
+    );
   }
 
   :global([data-theme="Dark"]) &[data-type="warning"],
   :global([data-theme="Very Dark"]) &[data-type="warning"],
   :global([data-theme="Catpuccin"]) &[data-type="warning"],
   :global([data-theme="Monokai"]) &[data-type="warning"] {
-    background-color: color-mix(in oklch, var(--color-warning) 35%, black);
+    background-color: color-mix(
+      in oklch,
+      var(--color-warning) 35%,
+      --color-black-bg
+    );
   }
 
   :global([data-theme="Dark"]) &[data-type="info"],
   :global([data-theme="Very Dark"]) &[data-type="info"],
   :global([data-theme="Catpuccin"]) &[data-type="info"],
   :global([data-theme="Monokai"]) &[data-type="info"] {
-    background-color: color-mix(in oklch, var(--color-info) 35%, black);
+    background-color: color-mix(
+      in oklch,
+      var(--color-info) 35%,
+      --color-black-bg
+    );
   }
 }
 
@@ -136,23 +168,5 @@
   }
   to {
     opacity: 0%;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(calc(100% + var(--spacing-5)));
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    transform: translateX(var(--radix-toast-swipe-end-x));
-  }
-  to {
-    transform: translateX(calc(100% + var(--spacing-5)));
   }
 }

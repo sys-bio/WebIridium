@@ -43,6 +43,8 @@
   --color-container-fg: var(--color-layer2-fg);
   --color-container-border: var(--color-layer2-border);
 
+  --color-black-bg: oklch(0 0 0);
+
   /* Specific-use Colors */
 
   --color-error: oklch(0.4471 0.142 4.86);
