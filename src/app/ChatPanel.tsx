@@ -630,11 +630,11 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       finalizedMessages = newMessages.map((m) =>
         m.id === placeholderId
           ? {
-              ...m,
-              text: getVerboseError(err),
-              thinking: false,
-              isError: true,
-            }
+            ...m,
+            text: getVerboseError(err),
+            thinking: false,
+            isError: true,
+          }
           : m,
       );
     } finally {
