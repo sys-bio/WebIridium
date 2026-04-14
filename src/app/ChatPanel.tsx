@@ -339,6 +339,30 @@ const ChatSettings = ({
     </div>
   );
 };
+// Helper function to extract raw LaTeX from the rehype-katex parsed MathML AST
+type HastNode = {
+  tagName?: string;
+  properties?: Record<string, string>;
+  children?: HastNode[];
+  value?: string;
+};
+
+const extractRawLatexFromHast = (nodeRaw: unknown): string => {
+  const node = nodeRaw as HastNode;
+  if (
+    node?.tagName === "annotation" &&
+    node.properties?.encoding === "application/x-tex"
+  ) {
+    return node.children?.[0]?.value || "";
+  }
+  if (node?.children && Array.isArray(node.children)) {
+    for (const child of node.children) {
+      const result = extractRawLatexFromHast(child);
+      if (result) return result;
+    }
+  }
+  return "";
+};
 
 const ChatPanel = ({ visible }: ChatPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -630,11 +654,11 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
       finalizedMessages = newMessages.map((m) =>
         m.id === placeholderId
           ? {
-            ...m,
-            text: getVerboseError(err),
-            thinking: false,
-            isError: true,
-          }
+              ...m,
+              text: getVerboseError(err),
+              thinking: false,
+              isError: true,
+            }
           : m,
       );
     } finally {
@@ -951,8 +975,15 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                           );
                         },
                         // @ts-expect-error: math is not in Components type
-                        math({ node, className, children, ...props }: any) {
-                          return (
+                        math: function MathComponent({
+                          node,
+                          className,
+                          children,
+                          ...props
+                        }: any) {
+                          const rawLatex = extractRawLatexFromHast(node);
+
+                          const mathEl = (
                             // @ts-expect-error: math is not in JSX types
                             <math
                               {...props}
@@ -961,10 +992,24 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                                 styles.mathEquation,
                               )}
                               data-testid="latex-math"
+                              onContextMenu={(e: React.MouseEvent) => {
+                                if (rawLatex) {
+                                  e.preventDefault();
+                                  void navigator.clipboard?.writeText(rawLatex);
+                                }
+                              }}
                             >
                               {children}
                               {/* @ts-expect-error: math is not in JSX types */}
                             </math>
+                          );
+
+                          return rawLatex ? (
+                            <Tooltip text="Right-click to copy formula">
+                              {mathEl}
+                            </Tooltip>
+                          ) : (
+                            mathEl
                           );
                         },
                       }}

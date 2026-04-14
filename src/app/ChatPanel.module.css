@@ -779,15 +779,26 @@
 .error-bubble {
   border-color: var(--color-error) !important;
   color: var(--color-error);
-  background: color-mix(in oklch,
-      var(--color-error) 15%,
-      transparent) !important;
+  background: color-mix(
+    in oklch,
+    var(--color-error) 15%,
+    transparent
+  ) !important;
 }
 
 .math-equation {
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: context-menu;
+  transition: border-color 0.2s;
+  padding: 0 4px;
+}
+
+.math-equation:hover {
+  border-color: var(--color-layer2-fg);
 }
 
 .math-equation[display="block"] {
