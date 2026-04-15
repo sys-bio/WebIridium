@@ -185,22 +185,10 @@ const readStringToPresets = (str: string): Record<string, GraphSettings> => {
   return migrated;
 };
 
-// We need this because since localStorage is not available in the test env.
-const isLocalStorageAvailable = (): boolean => {
-  return (
-    typeof localStorage !== "undefined" &&
-    typeof localStorage.getItem !== "undefined"
-  );
-};
-
 const graphPresetStorage: SyncStorage<
   Record<string, GraphSettings | undefined>
 > = {
   getItem(key, initialValue) {
-    if (!isLocalStorageAvailable()) {
-      return initialValue;
-    }
-
     const got = localStorage.getItem(key);
     if (!got) {
       return initialValue;
@@ -210,25 +198,14 @@ const graphPresetStorage: SyncStorage<
   },
 
   setItem(key, value) {
-    if (!isLocalStorageAvailable()) {
-      return;
-    }
-
     localStorage.setItem(key, JSON.stringify(value));
   },
 
   removeItem(key) {
-    if (!isLocalStorageAvailable()) {
-      return;
-    }
-
     localStorage.removeItem(key);
   },
 
   subscribe(key, callback, initialValue) {
-    if (!isLocalStorageAvailable()) {
-      return;
-    }
     if (
       typeof window === "undefined" ||
       typeof window.addEventListener === "undefined"

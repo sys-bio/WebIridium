@@ -54,6 +54,7 @@ window.HTMLElement.prototype.scrollIntoView = vi.fn();
 window.HTMLElement.prototype.releasePointerCapture = vi.fn();
 window.HTMLElement.prototype.hasPointerCapture = vi.fn();
 
+// Mocks for media query stuff (used for theme detection).
 class MockMediaQueryList extends EventTarget {
   get matches() {
     return true;
@@ -63,3 +64,41 @@ class MockMediaQueryList extends EventTarget {
 window.matchMedia = vi.fn((_) => {
   return new MockMediaQueryList() as MediaQueryList;
 });
+
+// Mock localStorage.
+// This is because newer node versions seem to change localStorage such that our
+// older tests are failing. This mocks localStorage in memory manually
+// so that we have full control.
+const mockLocalStorage = {
+  storage: new Map<string, string>(),
+
+  clear(): void {
+    this.storage.clear();
+  },
+
+  getItem(key: string): string | null {
+    return this.storage.get(key) ?? null;
+  },
+
+  removeItem(key: string) {
+    this.storage.delete(key);
+  },
+
+  setItem(key: string, value: string) {
+    this.storage.set(key, value);
+  },
+
+  key(index: number): string | null {
+    const iterator = this.storage.keys();
+    for (let i = 0; i < index; i++) {
+      iterator.next();
+    }
+    return iterator.next().value ?? null;
+  },
+
+  get length(): number {
+    return this.storage.size;
+  },
+};
+
+window.localStorage = mockLocalStorage;
