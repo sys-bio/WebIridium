@@ -40,7 +40,7 @@ Open the Sliders menu by pressing the ![sliders](images/sliders-icon.svg) slider
 
 ![same view as before but with sliders at the center-bottom](./images/sliders-active.png)
 
-By default, all sliders are disabled so they don't affect your model unexpectedly. Press "Activate All" next to the "Parameters" subheading to activate the sliders for "k1" and "k2."
+By default, all sliders are disabled so they don't affect your model unexpectedly. Press "Activate All" next to the "Parameters" subheading to activate some sliders.
 
 You can start dragging the sliders and the changes should reflect immediately in the graph to the right. Try doing this until you find something interesting.
 
