@@ -55,3 +55,4 @@ Please write tests for any changes you make, as much as is reasonable.
 - [simulation + copasi/antimony](./SIMULATION.md)
 - [url](./URL.md)
 - [icons](./ICONS.md)
+- [manual](./MANUAL.md)

@@ -1,0 +1,1 @@
+You can edit the manual in `/manual`. Read `/manual/README.md` for more specifics.
