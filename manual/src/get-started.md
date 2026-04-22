@@ -60,7 +60,4 @@ Since projects in WebIridium auto-save, you don't have to worry about losing you
 
 These are the basics of WebIridium, but there are many more features to explore. Try poking around the UI for anything that might be useful to you.
 
-If you have any specific questions about how a feature works or how to use it, you can use the following sections of this manual as a reference. Take advantage of the search feature as well!
-
-> [!NOTE]
-> The rest of the manual is still being written.
+You can also use the AI assistant to get help.
