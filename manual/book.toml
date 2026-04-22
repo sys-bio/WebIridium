@@ -8,5 +8,5 @@ default-theme = "iridium-light"
 preferred-dark-theme = "iridium-dark"
 git-repository-url = "https://github.com/sys-bio/WebIridium"
 edit-url-template = "https://github.com/sys-bio/WebIridium/edit/main/manual/{path}"
-site-url = "/manual/"
+site-url = "WebIridium/manual/"
 additional-css = ["theme/img-white-background.css"]
