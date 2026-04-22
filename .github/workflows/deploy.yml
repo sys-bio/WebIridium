@@ -30,6 +30,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # first compile the manual and sneak it into /public
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
+      - run: mdbook build manual/
+      - run: mv manual/book public/manual
+
+      # then do our usual vite build
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
