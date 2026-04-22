@@ -6,7 +6,7 @@ In this section, we'll be creating a model, simulating it, searching for interes
 
 ## Making Your First Project
 
-The first screen is the *Projects* page. On the left, you'll see a list of projects you have created. On the right is a list of models pulled from [https://biomodels.org/](https://biomodels.org/). Pressing one of these will automatically generate a project from the corresponding biomodel.
+The first screen is the _Projects_ page. On the left, you'll see a list of projects you have created. On the right is a list of models pulled from [https://biomodels.org/](https://biomodels.org/). Pressing one of these will automatically generate a project from the corresponding biomodel.
 
 Press the button near the top center that says "New Project."
 
@@ -30,11 +30,11 @@ Congratulations, you have run your first time course simulation on WebIridium!
 
 ## Loading Examples
 
-On the bottom-left is a panel named *Examples*. You can explore different types of models via this panel. Try out different ones, and pick one you think is interesting.
+On the bottom-left is a panel named _Examples_. You can explore different types of models via this panel. Try out different ones, and pick one you think is interesting.
 
 ## Using Sliders
 
-One of the main features of WebIridium is are the *sliders*. Sliders allow us to change the parameters and initial conditions of our model without having to edit our code then press simulate, and do this over and over again every time we want to change a value.
+One of the main features of WebIridium is are the _sliders_. Sliders allow us to change the parameters and initial conditions of our model without having to edit our code then press simulate, and do this over and over again every time we want to change a value.
 
 Open the Sliders menu by pressing the ![sliders](images/sliders-icon.svg) sliders icon at the top of the simulation panel. This should open a menu in the center-bottom with an array of sliders.
 

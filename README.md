@@ -23,10 +23,13 @@ Try it out now! https://sys-bio.github.io/WebIridium/
 # Preview
 
 #### Viewing 3D plot, sliders on the bottom
+
 <img width="735" height="478" alt="hello webiridum" src="https://github.com/user-attachments/assets/59c2dc68-8e2d-4525-b9e7-f2d428b6f4c8" />
 
 #### Customizing graph
+
 <img width="735" height="478" alt="graph settings" src="https://github.com/user-attachments/assets/ace49abe-5cfe-4f10-8374-ac55917a9628" />
 
 #### Start screen
+
 <img width="735" height="478" alt="start screen" src="https://github.com/user-attachments/assets/f5c81dc3-2c86-4446-87c5-7af5e9fc266c" />

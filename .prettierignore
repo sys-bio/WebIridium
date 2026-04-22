@@ -4,4 +4,6 @@ public/**/*
 src/assets/**/*.json
 src/features/editor/language-handler/**/*
 src/vendor/
-**/*.md
+DEVINSTRUCTIONS/**/*.md
+manual/theme/**/*
+manual/book/**/*
