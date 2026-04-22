@@ -23,7 +23,6 @@ import {
 
 import { useToast } from "@/components/Toast";
 import GlobalSettingsDialog from "./globalSettings/GlobalSettingsDialog";
-import HelpDialog from "./HelpDialog";
 import AboutDialog from "./AboutDialog";
 import CloseProjectButton from "./CloseProjectButton";
 import ProjectName from "./ProjectName";
@@ -104,7 +103,6 @@ const AppMenubar = () => {
   );
 
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [isHelpOpen, setHelpOpen] = useState(false);
   const [isAboutOpen, setAboutOpen] = useState(false);
 
   const {
@@ -140,8 +138,6 @@ const AppMenubar = () => {
       {isSettingsOpen && (
         <GlobalSettingsDialog onClose={() => setSettingsOpen(false)} />
       )}
-
-      {isHelpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
 
       {isAboutOpen && <AboutDialog onClose={() => setAboutOpen(false)} />}
 
@@ -219,7 +215,10 @@ const AppMenubar = () => {
         <RunMenu />
 
         <MenubarMenu name="Help">
-          <MenubarItem name="Help" onSelect={() => setHelpOpen(true)} />
+          <MenubarLinkItem
+            name="Help"
+            href={`${import.meta.env.BASE_URL}/manual/index.html`}
+          />
           <MenubarLinkItem
             name="Antimony Reference"
             href="https://tellurium.readthedocs.io/en/latest/antimony.html"

@@ -25,3 +25,6 @@ dist-ssr
 *.sln
 *.sw?
 .ignore
+
+# Custom
+public/manual
