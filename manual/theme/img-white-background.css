@@ -1,0 +1,4 @@
+/** this is so they can appear in dark mode without blending in. */
+img {
+    background-color: white;
+}
