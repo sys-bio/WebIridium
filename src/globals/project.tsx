@@ -13,7 +13,7 @@ import {
   listProjectsRaw,
   newProjectRaw,
   openProjectRaw,
-} from "@/features/fileSystem";
+} from "@/features/db";
 import { convertSbmlToAntimony } from "@/features/antimony";
 
 import { useToast } from "@/components/Toast";
@@ -188,7 +188,7 @@ const _openProjectAtom = atom(null, async (get, set, id: ProjectId) => {
 
 const _closeCurrentProjectAtom = atom(null, async (_get, set) => {
   await set(saveFullProjectAtom);
-  await closeCurrentProjectRaw();
+  closeCurrentProjectRaw();
   set(cancelSimulationAtom);
   set(variableSliderStatesAtom, {});
   set(independentVariableAtom, null);

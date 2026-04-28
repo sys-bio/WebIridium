@@ -13,7 +13,7 @@ import type {
 import { currentPresetAtom, projectGraphSettingsAtom } from "./graphPresets";
 import { parameterScanOptionsAtom, timeCourseParametersAtom } from "./settings";
 import { historyAtom } from "./history";
-import { saveProjectRaw } from "@/features/fileSystem";
+import { saveProjectRaw } from "@/features/db";
 
 const _isSavingAtom = atom(0);
 export const isSavingAtom = atom((get) => get(_isSavingAtom) > 0);
