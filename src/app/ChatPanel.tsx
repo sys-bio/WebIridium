@@ -22,6 +22,7 @@ import PulseLoader from "../components/PulseLoader";
 import { timeToAgoText } from "@/features/formatUtils";
 import { getVerboseError } from "@/features/chat/errorUtils";
 import { Tooltip } from "@/components/Tooltip";
+import { ContextMenu } from "radix-ui";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
@@ -992,12 +993,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                                 styles.mathEquation,
                               )}
                               data-testid="latex-math"
-                              onContextMenu={(e: React.MouseEvent) => {
-                                if (rawLatex) {
-                                  e.preventDefault();
-                                  void navigator.clipboard?.writeText(rawLatex);
-                                }
-                              }}
                             >
                               {children}
                               {/* @ts-expect-error: math is not in JSX types */}
@@ -1005,9 +1000,27 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
                           );
 
                           return rawLatex ? (
-                            <Tooltip text="Right-click to copy formula">
-                              {mathEl}
-                            </Tooltip>
+                            <ContextMenu.Root>
+                              <ContextMenu.Trigger asChild>
+                                <span className={styles.mathContextMenuTrigger}>
+                                  <Tooltip text="Right-click for options">
+                                    {mathEl}
+                                  </Tooltip>
+                                </span>
+                              </ContextMenu.Trigger>
+                              <ContextMenu.Portal>
+                                <ContextMenu.Content className={styles.contextMenuContent}>
+                                  <ContextMenu.Item
+                                    className={styles.contextMenuItem}
+                                    onSelect={() => {
+                                      void navigator.clipboard?.writeText(rawLatex);
+                                    }}
+                                  >
+                                    Copy formula
+                                  </ContextMenu.Item>
+                                </ContextMenu.Content>
+                              </ContextMenu.Portal>
+                            </ContextMenu.Root>
                           ) : (
                             mathEl
                           );
