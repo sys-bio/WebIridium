@@ -27,6 +27,7 @@ import AppStatusBar from "./AppStatusBar";
 import ProjectAutoSaver from "./ProjectAutoSaver";
 import { ToastProvider } from "@/components/Toast";
 import { TooltipProvider } from "@/components/Tooltip";
+import { DatabaseInitializer } from "./DatabaseInitializer";
 
 import TimeCoursePanel from "./simulation/TimeCoursePanel";
 import ParameterScanPanel from "./simulation/ParameterScanPanel";
@@ -174,6 +175,8 @@ const ThemeUpdater = () => {
 
     themeMediaQuery.addEventListener("change", handleChange);
 
+    handleChange();
+
     return () => themeMediaQuery.removeEventListener("change", handleChange);
   }, [tryUpdateThemeIfAutomatic]);
 
@@ -190,7 +193,9 @@ const App = () => {
       <AppProvider>
         <ThemeUpdater />
         <ProjectAutoSaver />
-        <AppContent />
+        <DatabaseInitializer>
+          <AppContent />
+        </DatabaseInitializer>
       </AppProvider>
     </AppErrorWrapperPage>
   );

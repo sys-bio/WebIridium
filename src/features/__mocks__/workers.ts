@@ -5,13 +5,6 @@ import {
   MockWorker,
 } from "@/testing-utils/mockWorker.ts";
 import type { FileSystemAction } from "@/workers/FileSystemWorker.ts";
-import {
-  getMockFile,
-  getMockFiles,
-  removeMockFile,
-  setMockFile,
-} from "@/testing-utils/mockFileSystem.ts";
-import type { ProjectData } from "../savedData.ts";
 
 export const createWorker = (type: WorkerType) => {
   const worker = new MockWorker();
@@ -22,46 +15,9 @@ export const createWorker = (type: WorkerType) => {
         "message",
         createMockWorkerMessageHandler(worker, (unknownAction) => {
           const action = unknownAction as FileSystemAction;
-          let currentId: string | null = null;
           switch (action.type) {
-            case "listProjects": {
-              const map = new Map();
-              for (const [id, data] of getMockFiles()) {
-                map.set(id, (data as ProjectData).metadata);
-              }
-              return map;
-            }
-            case "openProject": {
-              const data = getMockFile(action.payload);
-              if (data === undefined) {
-                throw new Error("Project was deleted somewhere else.");
-              }
-              currentId = action.payload;
-              return data;
-            }
-            case "closeCurrentProject":
-              currentId = null;
-              return null;
-            case "newProject":
-              setMockFile(action.payload.id, action.payload.data);
-              return null;
-            case "saveProject":
-              if (!currentId) {
-                throw new Error("No project open.");
-              }
-              setMockFile(currentId, {
-                ...(getMockFile(currentId) as object),
-                ...action.payload,
-              });
-              return null;
-            case "deleteProject":
-              removeMockFile(action.payload);
-              return null;
-            default:
-              /* eslint-disable */
-              const exhaustivenessCheck: never = action;
-              throw new Error(`unhandled action: ${exhaustivenessCheck}`);
-            /* eslint-enable */
+            case "getAllProjects":
+              return new Map();
           }
         }),
       );

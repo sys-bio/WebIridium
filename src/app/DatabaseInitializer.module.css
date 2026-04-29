@@ -1,0 +1,17 @@
+.screen {
+  display: grid;
+  place-items: center;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+
+  background-color: var(--color-layer1-bg);
+}
+
+.message {
+  display: inline-block;
+  font-size: var(--font-size-big);
+}

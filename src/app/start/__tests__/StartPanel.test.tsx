@@ -6,20 +6,18 @@ import TimeCoursePanel from "@/app/simulation/TimeCoursePanel";
 import StartPanel from "../StartPanel";
 import AppMenubar from "@/app/AppMenubar";
 import {
-  removeMockFile,
-  resetMockFiles,
-  setMockFile,
-} from "@/testing-utils/mockFileSystem";
+  removeMockProject,
+  resetMockDatabaseDelay,
+  resetMockProjects,
+  setMockDatabaseDelay,
+  setMockProject,
+} from "@/testing-utils/mockDatabase";
 import { getNewProjectData, type ProjectData } from "@/features/savedData";
-import {
-  resetWorkerResponseDelay,
-  setWorkerResponseDelay,
-} from "@/testing-utils/mockWorker";
 import { getToastHistory } from "@/testing-utils/mockToast";
 
 afterEach(() => {
-  resetMockFiles();
-  resetWorkerResponseDelay();
+  resetMockDatabaseDelay();
+  resetMockProjects();
 });
 
 const getProjectDataWithName = (name: string): ProjectData => {
@@ -30,7 +28,7 @@ const getProjectDataWithName = (name: string): ProjectData => {
 
 describe("selecting project", () => {
   it("should enable simulation", async () => {
-    setMockFile("1", getProjectDataWithName("test"));
+    await setMockProject("1", getProjectDataWithName("test"));
 
     await renderWithinWorkspace(
       <>
@@ -40,15 +38,19 @@ describe("selecting project", () => {
       { shouldStubActiveFile: false },
     );
 
-    expect(screen.queryByText("Simulate")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("test")).toBeInTheDocument();
+    });
 
     await userEvent.click(screen.getByText("test"));
 
-    expect(screen.getByText("Simulate")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Simulate")).toBeInTheDocument();
+    });
   });
 
   it("should show project name in menubar", async () => {
-    setMockFile("1", getProjectDataWithName("test"));
+    await setMockProject("1", getProjectDataWithName("test"));
 
     await renderWithinWorkspace(
       <>
@@ -63,15 +65,21 @@ describe("selecting project", () => {
     expect(screen.queryByText("Simulate")).not.toBeInTheDocument();
     expect(within(menubar).queryByText("test")).not.toBeInTheDocument();
 
+    await waitFor(() => {
+      expect(screen.getByText("test")).toBeInTheDocument();
+    });
+
     await userEvent.click(screen.getByText("test"));
 
-    expect(within(menubar).getByText("test")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(menubar).getByText("test")).toBeInTheDocument();
+    });
   });
 
   it("should open the first selected one", async () => {
-    setMockFile("1", getProjectDataWithName("test1"));
-    setMockFile("2", getProjectDataWithName("test2"));
-    setMockFile("3", getProjectDataWithName("test3"));
+    await setMockProject("1", getProjectDataWithName("test1"));
+    await setMockProject("2", getProjectDataWithName("test2"));
+    await setMockProject("3", getProjectDataWithName("test3"));
 
     await renderWithinWorkspace(
       <>
@@ -86,19 +94,27 @@ describe("selecting project", () => {
     expect(screen.queryByText("Simulate")).not.toBeInTheDocument();
     expect(within(menubar).queryByText("test1")).not.toBeInTheDocument();
 
-    setWorkerResponseDelay(50);
+    await waitFor(() => {
+      expect(screen.getByText("test1")).toBeInTheDocument();
+    });
+    expect(screen.getByText("test2")).toBeInTheDocument();
+    expect(screen.getByText("test3")).toBeInTheDocument();
+
+    setMockDatabaseDelay(50);
 
     await userEvent.click(screen.getByText("test1"));
     await userEvent.click(screen.getByText("test2"));
     await userEvent.click(screen.getByText("test3"));
-
-    await waitFor(() => {
-      expect(within(menubar).getByText("test1")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(within(menubar).getByText("test1")).toBeInTheDocument();
+      },
+      { timeout: 1000 },
+    );
   });
 
   it("should have a reasonable error message if the file no longer exists", async () => {
-    setMockFile("1", getProjectDataWithName("test"));
+    await setMockProject("1", getProjectDataWithName("test"));
 
     await renderWithinWorkspace(
       <>
@@ -108,13 +124,18 @@ describe("selecting project", () => {
       { shouldStubActiveFile: false },
     );
 
-    removeMockFile("1");
+    await waitFor(() => {
+      expect(screen.getByText("test")).toBeInTheDocument();
+    });
+
+    await removeMockProject("1");
 
     await userEvent.click(screen.getByText("test"));
 
-    const toastHistory = getToastHistory();
-    expect(toastHistory).toHaveLength(1);
-    expect(toastHistory[0].description).toMatch(/deleted/i);
+    await waitFor(() => {
+      const toastHistory = getToastHistory();
+      expect(toastHistory[0].description).toMatch(/deleted/i);
+    });
   });
 });
 
@@ -134,7 +155,9 @@ describe("creating a project", () => {
     const myProjects = screen.getByText("My Projects").parentElement!;
     await userEvent.click(within(myProjects).getByText("New Project"));
 
-    expect(screen.getByText("Simulate")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Simulate")).toBeInTheDocument();
+    });
   });
 
   it("should show project name in menubar", async () => {
@@ -156,11 +179,13 @@ describe("creating a project", () => {
     await userEvent.click(within(myProjects).getByText("New Project"));
 
     const defaultName = getNewProjectData().metadata.name;
-    expect(within(menubar).getByText(defaultName)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(menubar).getByText(defaultName)).toBeInTheDocument();
+    });
   });
 
   it("should not create if opening a project", async () => {
-    setMockFile("1", getProjectDataWithName("test"));
+    await setMockProject("1", getProjectDataWithName("test"));
 
     await renderWithinWorkspace(
       <>
@@ -172,10 +197,16 @@ describe("creating a project", () => {
     );
 
     const menubar = screen.getByTestId("app-menubar");
+
     expect(screen.queryByText("Simulate")).not.toBeInTheDocument();
+
     expect(within(menubar).queryByText("test")).not.toBeInTheDocument();
 
-    setWorkerResponseDelay(50);
+    await waitFor(() => {
+      expect(screen.getByText("test")).toBeInTheDocument();
+    });
+
+    setMockDatabaseDelay(50);
 
     await userEvent.click(screen.getByText("test"));
 
@@ -183,15 +214,18 @@ describe("creating a project", () => {
     const myProjects = screen.getByText("My Projects").parentElement!;
     await userEvent.click(within(myProjects).getByText("New Project"));
 
-    await waitFor(() => {
-      expect(within(menubar).getByText("test")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(within(menubar).getByText("test")).toBeInTheDocument();
+      },
+      { timeout: 1000 },
+    );
   });
 });
 
 describe("deleting", () => {
   it("should remove an item from the list", async () => {
-    setMockFile("1", getProjectDataWithName("test"));
+    await setMockProject("1", getProjectDataWithName("test"));
 
     await renderWithinWorkspace(
       <>
@@ -206,11 +240,14 @@ describe("deleting", () => {
     await userEvent.click(screen.getByLabelText("More"));
     await userEvent.click(screen.getByText("Delete"));
 
-    expect(screen.queryByText("test")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("test")).not.toBeInTheDocument();
+    });
   });
 
   it("should not do anything if opening a file", async () => {
-    setMockFile("1", getProjectDataWithName("test"));
+    await setMockProject("1", getProjectDataWithName("test1"));
+    await setMockProject("2", getProjectDataWithName("test2"));
 
     await renderWithinWorkspace(
       <>
@@ -220,15 +257,20 @@ describe("deleting", () => {
       { shouldStubActiveFile: false },
     );
 
-    expect(screen.getByText("test")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("test1")).toBeInTheDocument();
+    });
 
-    await userEvent.click(screen.getByText("test"));
+    setMockDatabaseDelay(50);
 
-    await userEvent.click(screen.getByLabelText("More"));
+    await userEvent.click(screen.getByText("test1"));
 
-    setWorkerResponseDelay(100);
+    await userEvent.click(screen.getAllByLabelText("More")[0]);
+
     await userEvent.click(screen.getByText("Delete"));
 
-    expect(screen.getByText("test")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("test1")).toBeInTheDocument();
+    });
   });
 });

@@ -2,7 +2,12 @@
  * Handles interacting with IndexedDB database.
  */
 
-import { openDB, type IDBPDatabase, type IDBPTransaction } from "idb";
+import {
+  openDB,
+  type IDBPDatabase,
+  type IDBPTransaction,
+  type OpenDBCallbacks,
+} from "idb";
 import {
   type ProjectId,
   type Metadata,
@@ -16,6 +21,7 @@ import {
   getNewProjectId,
   getNewProjectData,
 } from "./savedData";
+import { getAllProjects } from "./fileSystem";
 
 const MAIN_DB_NAME = "main";
 const METADATA_STORE = "metadata";
@@ -23,6 +29,9 @@ const IRIDIUM_STORE = "iridium";
 const RESULTS_STORE = "results";
 const CODE_STORE = "code";
 
+const MIGRATED_FLAG = "migratedFromOpfs";
+
+let mainDb: IDBPDatabase | undefined;
 /** Release lock on current project. */
 let projectHandle:
   | {
@@ -31,6 +40,7 @@ let projectHandle:
     }
   | undefined;
 
+// Whenever you need to add a new object store/modify schema, add a migration here.
 const schemaMigrations: ((
   db: IDBPDatabase,
   tx: IDBPTransaction<unknown, string[], "versionchange">,
@@ -44,25 +54,59 @@ const schemaMigrations: ((
   },
 ];
 
-const openMainDb = async (): Promise<IDBPDatabase> => {
-  return await openDB(MAIN_DB_NAME, schemaMigrations.length, {
-    upgrade(db, oldVersion, _, tx) {
-      console.log(oldVersion);
+export const openMainDb = async (
+  callbacks?: OpenDBCallbacks<unknown>,
+): Promise<IDBPDatabase> => {
+  mainDb = await openDB(MAIN_DB_NAME, schemaMigrations.length, {
+    ...callbacks,
+    upgrade(db, oldVersion, _newVersion, tx) {
       for (let i = oldVersion; i < schemaMigrations.length; i++) {
         schemaMigrations[i](db, tx);
       }
     },
-    blocked() {
-      // TODO: implement
-    },
-    blocking() {
-      // TODO: implement
-    },
   });
+
+  return mainDb;
+};
+
+export const ensureMigrateDbFromOpfs = async (): Promise<void> => {
+  if (!localStorage.getItem(MIGRATED_FLAG)) {
+    const db = checkMainDb();
+    const projects = await getAllProjects();
+
+    const tx = db.transaction(
+      [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
+      "readwrite",
+    );
+
+    const metadataStore = tx.objectStore(METADATA_STORE);
+    const iridiumStore = tx.objectStore(IRIDIUM_STORE);
+    const resultsStore = tx.objectStore(RESULTS_STORE);
+    const codeStore = tx.objectStore(CODE_STORE);
+
+    await Promise.all(
+      Array.from(projects.entries()).flatMap(([id, project]) => [
+        metadataStore.put(project.metadata, id),
+        iridiumStore.put(project.iridium, id),
+        resultsStore.put(project.results, id),
+        codeStore.put(project.code, id),
+      ]),
+    );
+
+    await tx.done;
+
+    localStorage.setItem(MIGRATED_FLAG, "done");
+  }
+};
+
+const checkMainDb = (): IDBPDatabase => {
+  if (!mainDb) throw new Error("Database not initialized.");
+  return mainDb;
 };
 
 export const listProjectsRaw = async (): Promise<Map<ProjectId, Metadata>> => {
-  const db = await openMainDb();
+  const db = checkMainDb();
+
   const tx = db.transaction(METADATA_STORE, "readonly");
   const metadataStore = tx.objectStore(METADATA_STORE);
 
@@ -89,6 +133,8 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => {
     throw new Error("Another project is already open");
   }
 
+  const db = checkMainDb();
+
   let resolveData: (data: ProjectData) => void;
   const resultPromise = new Promise((resolve) => {
     resolveData = resolve;
@@ -102,7 +148,6 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => {
         // someone else had it, abort
         throw new Error("Project open in another tab.");
       } else {
-        const db = await openMainDb();
         const tx = db.transaction(
           [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
           "readonly",
@@ -119,6 +164,10 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => {
         const code = (await codeStore.get(id)) as string;
 
         await tx.done;
+
+        if (!iridium || !iridium || !results) {
+          throw new Error("Project has been deleted.");
+        }
 
         resolveData({
           metadata: migrateMetadata(metadata),
@@ -156,6 +205,8 @@ export const newProjectRaw = async (
   name?: string,
   code?: string,
 ): Promise<NewProjectResult> => {
+  const db = checkMainDb();
+
   const id = getNewProjectId();
   const data = getNewProjectData();
 
@@ -180,7 +231,6 @@ export const newProjectRaw = async (
         // someone else had it, abort
         throw new Error("Project already exists.");
       } else {
-        const db = await openMainDb();
         const tx = db.transaction(
           [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
           "readwrite",
@@ -220,6 +270,8 @@ export const saveProjectRaw = async (
 ): Promise<void> => {
   if (!projectHandle) throw new Error("No project open.");
 
+  const db = checkMainDb();
+
   const writing: Record<string, unknown> = {};
   if (data.metadata) {
     writing[METADATA_STORE] = data.metadata;
@@ -237,7 +289,6 @@ export const saveProjectRaw = async (
     writing[CODE_STORE] = data.code;
   }
 
-  const db = await openMainDb();
   const tx = db.transaction(Array.from(Object.keys(writing)), "readwrite");
   for (const [storeName, value] of Object.entries(writing)) {
     await tx.objectStore(storeName).put(value, projectHandle.id);
@@ -251,12 +302,13 @@ export const deleteProjectRaw = async (id: ProjectId): Promise<void> => {
     throw new Error("Cannot delete current project.");
   }
 
+  const db = checkMainDb();
+
   await navigator.locks.request(id, { ifAvailable: true }, async (lock) => {
     if (lock === null) {
       // someone else had it, abort
       throw new Error("Project open in another tab.");
     } else {
-      const db = await openMainDb();
       const tx = db.transaction(
         [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
         "readwrite",

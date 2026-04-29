@@ -8,6 +8,7 @@ import { vi, afterEach, beforeAll } from "vitest";
 vi.mock("@/app/EditorPanel.tsx");
 vi.mock("@/components/Toast.tsx");
 vi.mock("@/features/workers");
+vi.mock("@/features/db");
 vi.mock("echarts");
 vi.mock("echarts/core");
 vi.mock("monaco-editor");
