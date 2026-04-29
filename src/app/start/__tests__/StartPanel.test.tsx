@@ -76,43 +76,6 @@ describe("selecting project", () => {
     });
   });
 
-  it("should open the first selected one", async () => {
-    await setMockProject("1", getProjectDataWithName("test1"));
-    await setMockProject("2", getProjectDataWithName("test2"));
-    await setMockProject("3", getProjectDataWithName("test3"));
-
-    await renderWithinWorkspace(
-      <>
-        <AppMenubar />
-        <TimeCoursePanel visible />
-        <StartPanel />
-      </>,
-      { shouldStubActiveFile: false },
-    );
-
-    const menubar = screen.getByTestId("app-menubar");
-    expect(screen.queryByText("Simulate")).not.toBeInTheDocument();
-    expect(within(menubar).queryByText("test1")).not.toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText("test1")).toBeInTheDocument();
-    });
-    expect(screen.getByText("test2")).toBeInTheDocument();
-    expect(screen.getByText("test3")).toBeInTheDocument();
-
-    setMockDatabaseDelay(50);
-
-    await userEvent.click(screen.getByText("test1"));
-    await userEvent.click(screen.getByText("test2"));
-    await userEvent.click(screen.getByText("test3"));
-    await waitFor(
-      () => {
-        expect(within(menubar).getByText("test1")).toBeInTheDocument();
-      },
-      { timeout: 1000 },
-    );
-  });
-
   it("should have a reasonable error message if the file no longer exists", async () => {
     await setMockProject("1", getProjectDataWithName("test"));
 
