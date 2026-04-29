@@ -5,7 +5,6 @@ import {
   chatHistoryAtom,
   activeConversationAtom,
   upsertActiveConversationAtom,
-  migrateFromLegacyDbAtom,
   openAiApiKeyAtom,
   claudeApiKeyAtom,
   systemPromptAtom,
@@ -359,11 +358,6 @@ const ChatPanel = ({ visible }: ChatPanelProps) => {
   );
 
   const upsertActiveConversation = useSetAtom(upsertActiveConversationAtom);
-  const migrateChatData = useSetAtom(migrateFromLegacyDbAtom);
-
-  useEffect(() => {
-    void migrateChatData();
-  }, [migrateChatData]);
 
   const isContextActive = includeModel && hasActiveProject;
 
