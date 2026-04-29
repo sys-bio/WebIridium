@@ -127,17 +127,15 @@ export const listProjectsRaw = async (): Promise<Map<ProjectId, Metadata>> => {
  *
  * @returns the data associated with the project
  */
-export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => new Promise((resolve, reject) => {
-  if (projectHandle) {
-    throw new Error("Another project is already open");
-  }
+export const openProjectRaw = (id: ProjectId): Promise<ProjectData> =>
+  new Promise((resolve, reject) => {
+    if (projectHandle) {
+      throw new Error("Another project is already open");
+    }
 
-  const db = checkMainDb();
+    const db = checkMainDb();
 
-  void navigator.locks.request(
-    id,
-    { ifAvailable: true },
-    async (lock) => {
+    void navigator.locks.request(id, { ifAvailable: true }, async (lock) => {
       if (lock === null) {
         // someone else had it, abort
         reject(new Error("Project open in another tab."));
@@ -180,9 +178,8 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => new Promi
           };
         });
       }
-    },
-  );
-});
+    });
+  });
 
 export const closeCurrentProjectRaw = (): void => {
   if (projectHandle) {
@@ -193,24 +190,22 @@ export const closeCurrentProjectRaw = (): void => {
 export const newProjectRaw = async (
   name?: string,
   code?: string,
-): Promise<[ProjectId, ProjectData]> => new Promise((resolve, reject) => {
-  const db = checkMainDb();
+): Promise<[ProjectId, ProjectData]> =>
+  new Promise((resolve, reject) => {
+    const db = checkMainDb();
 
-  const id = getNewProjectId();
-  const data = getNewProjectData();
+    const id = getNewProjectId();
+    const data = getNewProjectData();
 
-  if (name !== undefined) {
-    data.metadata.name = name;
-  }
+    if (name !== undefined) {
+      data.metadata.name = name;
+    }
 
-  if (code !== undefined) {
-    data.code = code;
-  }
+    if (code !== undefined) {
+      data.code = code;
+    }
 
-  void navigator.locks.request(
-    id,
-    { ifAvailable: true },
-    async (lock) => {
+    void navigator.locks.request(id, { ifAvailable: true }, async (lock) => {
       if (lock === null) {
         // someone else had it, abort
         reject(new Error("Project already exists."));
@@ -243,9 +238,8 @@ export const newProjectRaw = async (
           };
         });
       }
-    },
-  );
-});
+    });
+  });
 
 export const saveProjectRaw = async (
   data: Partial<ProjectData>,
