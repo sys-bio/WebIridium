@@ -1,9 +1,5 @@
 import { atom } from "jotai";
-import {
-  fileSystemChangeIdAtom,
-  hasActiveProjectAtom,
-  metadataAtom,
-} from "./project";
+import { incrementDbChangeIdAtom, hasActiveProjectAtom, metadataAtom } from "./project";
 import { editorContentAtom, variableSettingssAtom } from "./model";
 import type {
   IridiumData,
@@ -67,7 +63,7 @@ export const savePartialProjectAtom = atom(
 
       await saveProjectRaw(savingData);
     } finally {
-      set(fileSystemChangeIdAtom, (old) => old + 1);
+      set(incrementDbChangeIdAtom);
       // add a little delay so it doesn't go too fast
       setTimeout(() => {
         set(_isSavingAtom, get(_isSavingAtom) - 1);

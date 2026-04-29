@@ -17,7 +17,7 @@ import {
   availableLeftPanelsAtom,
 } from "@/globals/layout";
 import { themeAtom, tryUpdateThemeIfAutomaticAtom } from "@/globals/appearance";
-import { activeProjectFileAtom } from "@/globals/project";
+import { activeProjectFileAtom, useDbChangeIdCrossTabSync } from "@/globals/project";
 
 import AppErrorWrapperPage from "./AppErrorWrapperPage";
 import WorkspaceProvider from "./WorkspaceProvider";
@@ -187,15 +187,23 @@ const ThemeUpdater = () => {
   return null;
 };
 
+const AppWithHooks = () => {
+  useDbChangeIdCrossTabSync();
+
+  return (
+    <DatabaseInitializer>
+      <AppContent />
+    </DatabaseInitializer>
+  );
+};
+
 const App = () => {
   return (
     <AppErrorWrapperPage>
       <AppProvider>
         <ThemeUpdater />
         <ProjectAutoSaver />
-        <DatabaseInitializer>
-          <AppContent />
-        </DatabaseInitializer>
+        <AppWithHooks />
       </AppProvider>
     </AppErrorWrapperPage>
   );

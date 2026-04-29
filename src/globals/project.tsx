@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { atom, useSetAtom, type Atom } from "jotai";
 
 import {
@@ -47,9 +47,33 @@ import { variableSliderStatesAtom } from "./slider";
 import { useAtom } from "jotai";
 import { unwrap } from "jotai/utils";
 
-// Increments every time a change is made to the file system
+const dbBroadcastChannel = new BroadcastChannel("indexeddb-changes");
+
+// Increments every time a change is made to the db
 // Other atoms should `get` this if they want to re-evaluate when the file system changes.
-export const fileSystemChangeIdAtom = atom(0);
+const _dbChangeIdAtom = atom(0);
+
+export const incrementDbChangeIdAtom = atom(null, (_, set) => {
+  set(_dbChangeIdAtom, (prev) => prev + 1);
+  dbBroadcastChannel.postMessage(true);
+});
+
+/** Increments dbChangeIdAtom everytime it is incremented in another tab. */
+export const useDbChangeIdCrossTabSync = () => {
+  const setDbChangeIdAtom = useSetAtom(_dbChangeIdAtom);
+
+  useEffect(() => {
+    const handler = () => {
+      setDbChangeIdAtom(prev => {
+        return prev + 1
+      });
+    };
+
+    dbBroadcastChannel.addEventListener("message", handler);
+
+    return () => dbBroadcastChannel.removeEventListener("message", handler);
+  }, []);
+};
 
 export const activeProjectFileAtom = atom<ProjectId | null>(null);
 export const hasActiveProjectAtom = atom(
@@ -68,7 +92,7 @@ export const metadataAtom = atom<Metadata>({
 const _projectListAtom: Atom<Promise<Map<ProjectId, Metadata>>> = atom(
   async (get) => {
     // do this to update the atom on any file system changes
-    get(fileSystemChangeIdAtom);
+    get(_dbChangeIdAtom);
 
     const projects = await listProjectsRaw();
     const migratedProjects: Map<ProjectId, Metadata> = new Map();
@@ -156,7 +180,7 @@ const _createNewProjectAtom = atom(
 
     await set(_updateGlobalsFromProjectDataAtom, [id, data]);
 
-    set(fileSystemChangeIdAtom, (prev) => prev + 1);
+    set(_dbChangeIdAtom, (prev) => prev + 1);
 
     if (get(currentLeftPanelAtom) === null) {
       set(currentLeftPanelAtom, "Time Course");
@@ -202,7 +226,7 @@ const _closeCurrentProjectAtom = atom(null, async (_get, set) => {
 
 const _deleteProjectAtom = atom(null, async (_get, set, id: ProjectId) => {
   await deleteProjectRaw(id);
-  set(fileSystemChangeIdAtom, (old) => old + 1);
+  set(incrementDbChangeIdAtom);
 });
 
 /**
