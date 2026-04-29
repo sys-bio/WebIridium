@@ -32,7 +32,6 @@ const CODE_STORE = "code";
 const MIGRATED_FLAG = "migratedFromOpfs";
 
 let mainDb: IDBPDatabase | undefined;
-/** Release lock on current project. */
 let projectHandle:
   | {
       id: ProjectId;
@@ -128,25 +127,20 @@ export const listProjectsRaw = async (): Promise<Map<ProjectId, Metadata>> => {
  *
  * @returns the data associated with the project
  */
-export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => {
+export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => new Promise((resolve, reject) => {
   if (projectHandle) {
     throw new Error("Another project is already open");
   }
 
   const db = checkMainDb();
 
-  let resolveData: (data: ProjectData) => void;
-  const resultPromise = new Promise((resolve) => {
-    resolveData = resolve;
-  });
-
-  const lockPromise = navigator.locks.request(
+  navigator.locks.request(
     id,
     { ifAvailable: true },
     async (lock) => {
       if (lock === null) {
         // someone else had it, abort
-        throw new Error("Project open in another tab.");
+        reject(new Error("Project open in another tab."));
       } else {
         const tx = db.transaction(
           [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
@@ -169,7 +163,7 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => {
           throw new Error("Project has been deleted.");
         }
 
-        resolveData({
+        resolve({
           metadata: migrateMetadata(metadata),
           iridium: migrateIridiumData(iridium),
           results: migrateResultsData(results),
@@ -188,9 +182,7 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => {
       }
     },
   );
-
-  return Promise.race([resultPromise, lockPromise]);
-};
+});
 
 export const closeCurrentProjectRaw = (): void => {
   if (projectHandle) {
@@ -198,13 +190,10 @@ export const closeCurrentProjectRaw = (): void => {
   }
 };
 
-// eslint can't seem to parse tuple type inside generic call, so just alias this
-type NewProjectResult = [ProjectId, ProjectData];
-
 export const newProjectRaw = async (
   name?: string,
   code?: string,
-): Promise<NewProjectResult> => {
+): Promise<[ProjectId, ProjectData]> => new Promise((resolve, reject) => {
   const db = checkMainDb();
 
   const id = getNewProjectId();
@@ -218,18 +207,13 @@ export const newProjectRaw = async (
     data.code = code;
   }
 
-  let resolveData: (data: [ProjectId, ProjectData]) => void;
-  const resultPromise = new Promise((resolve) => {
-    resolveData = resolve;
-  });
-
-  const lockPromise = navigator.locks.request(
+  navigator.locks.request(
     id,
     { ifAvailable: true },
     async (lock) => {
       if (lock === null) {
         // someone else had it, abort
-        throw new Error("Project already exists.");
+        reject(new Error("Project already exists."));
       } else {
         const tx = db.transaction(
           [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
@@ -247,7 +231,7 @@ export const newProjectRaw = async (
 
         await tx.done;
 
-        resolveData([id, data]);
+        resolve([id, data]);
 
         return new Promise<void>((resolveLock) => {
           projectHandle = {
@@ -261,9 +245,7 @@ export const newProjectRaw = async (
       }
     },
   );
-
-  return Promise.race<NewProjectResult>([resultPromise, lockPromise]);
-};
+});
 
 export const saveProjectRaw = async (
   data: Partial<ProjectData>,
