@@ -1,5 +1,9 @@
 import { atom } from "jotai";
-import { incrementDbChangeIdAtom, hasActiveProjectAtom, metadataAtom } from "./project";
+import {
+  incrementDbChangeIdAtom,
+  hasActiveProjectAtom,
+  metadataAtom,
+} from "./project";
 import { editorContentAtom, variableSettingssAtom } from "./model";
 import type {
   IridiumData,

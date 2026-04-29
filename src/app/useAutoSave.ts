@@ -13,7 +13,7 @@ import type { IridiumData, Metadata, ResultsData } from "@/features/savedData";
 
 const SAVE_DEBOUNCE = 1_000;
 
-const useAutoSave = <T>(
+const useAutoSavePartial = <T>(
   callback: (data: T) => Promise<void>,
   data: T,
   savingRef: RefObject<number>,
@@ -57,7 +57,7 @@ const useAutoSave = <T>(
   }, [data, savingRef]);
 };
 
-const ProjectAutoSaver = () => {
+const useAutoSave = () => {
   const savePartial = useSetAtom(savePartialProjectAtom);
 
   const savingRef = useRef(0);
@@ -84,7 +84,7 @@ const ProjectAutoSaver = () => {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, [savingRef, isSaving]);
 
-  useAutoSave(
+  useAutoSavePartial(
     async (data: Metadata) => {
       await savePartial({ metadata: data });
     },
@@ -92,7 +92,7 @@ const ProjectAutoSaver = () => {
     savingRef,
   );
 
-  useAutoSave(
+  useAutoSavePartial(
     async (data: IridiumData) => {
       await savePartial({ iridium: data });
     },
@@ -100,7 +100,7 @@ const ProjectAutoSaver = () => {
     savingRef,
   );
 
-  useAutoSave(
+  useAutoSavePartial(
     async (data: ResultsData) => {
       await savePartial({ results: data });
     },
@@ -108,7 +108,7 @@ const ProjectAutoSaver = () => {
     savingRef,
   );
 
-  useAutoSave(
+  useAutoSavePartial(
     async (data: string) => {
       await savePartial({ code: data });
     },
@@ -119,4 +119,4 @@ const ProjectAutoSaver = () => {
   return null;
 };
 
-export default ProjectAutoSaver;
+export default useAutoSave;

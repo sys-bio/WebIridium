@@ -1,7 +1,13 @@
-import { atom } from "jotai";
+import { atom, useAtomValue, useSetAtom } from "jotai";
 
-import { getPreferredTheme, type Theme } from "@/features/theme";
+import {
+  getPreferredTheme,
+  setTheme,
+  themeMediaQuery,
+  type Theme,
+} from "@/features/theme";
 import { atomWithStorage } from "jotai/utils";
+import { useEffect } from "react";
 
 // theme
 
@@ -28,9 +34,31 @@ export const themeAtom = atom((get) => {
  * Should be called everytime users preferred theme changes.
  * This will try to update the application theme if it is Automatic.
  */
-export const tryUpdateThemeIfAutomaticAtom = atom(null, (_, set) => {
+const tryUpdateThemeIfAutomaticAtom = atom(null, (_, set) => {
   set(_automaticThemeAtom, getPreferredTheme());
 });
 
 // other stuff
 export const editorFontSizeAtom = atomWithStorage("editorFontSize", 12);
+
+// hooks
+export const useAutomaticTheme = () => {
+  const tryUpdateThemeIfAutomatic = useSetAtom(tryUpdateThemeIfAutomaticAtom);
+  const theme = useAtomValue(themeAtom);
+
+  useEffect(() => {
+    const handleChange = () => {
+      tryUpdateThemeIfAutomatic();
+    };
+
+    themeMediaQuery.addEventListener("change", handleChange);
+
+    handleChange();
+
+    return () => themeMediaQuery.removeEventListener("change", handleChange);
+  }, [tryUpdateThemeIfAutomatic]);
+
+  useEffect(() => {
+    setTheme(theme);
+  }, [theme]);
+};

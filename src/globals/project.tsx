@@ -64,15 +64,15 @@ export const useDbChangeIdCrossTabSync = () => {
 
   useEffect(() => {
     const handler = () => {
-      setDbChangeIdAtom(prev => {
-        return prev + 1
+      setDbChangeIdAtom((prev) => {
+        return prev + 1;
       });
     };
 
     dbBroadcastChannel.addEventListener("message", handler);
 
     return () => dbBroadcastChannel.removeEventListener("message", handler);
-  }, []);
+  }, [setDbChangeIdAtom]);
 };
 
 export const activeProjectFileAtom = atom<ProjectId | null>(null);
