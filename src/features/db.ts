@@ -134,7 +134,7 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> => new Promi
 
   const db = checkMainDb();
 
-  navigator.locks.request(
+  void navigator.locks.request(
     id,
     { ifAvailable: true },
     async (lock) => {
@@ -207,7 +207,7 @@ export const newProjectRaw = async (
     data.code = code;
   }
 
-  navigator.locks.request(
+  void navigator.locks.request(
     id,
     { ifAvailable: true },
     async (lock) => {
