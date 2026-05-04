@@ -130,7 +130,7 @@ export const listProjectsRaw = async (): Promise<Map<ProjectId, Metadata>> => {
 export const openProjectRaw = (id: ProjectId): Promise<ProjectData> =>
   new Promise((resolve, reject) => {
     if (projectHandle) {
-      throw new Error("Another project is already open");
+      throw new Error("Another project is already open.");
     }
 
     const db = checkMainDb();
@@ -157,7 +157,7 @@ export const openProjectRaw = (id: ProjectId): Promise<ProjectData> =>
 
         await tx.done;
 
-        if (!iridium || !iridium || !results) {
+        if (!metadata || !iridium || !results || code === undefined) {
           throw new Error("Project has been deleted.");
         }
 
@@ -261,7 +261,7 @@ export const saveProjectRaw = async (
     writing[RESULTS_STORE] = data.results;
   }
 
-  if (data.code) {
+  if (data.code !== undefined) {
     writing[CODE_STORE] = data.code;
   }
 
