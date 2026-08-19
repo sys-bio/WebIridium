@@ -36,6 +36,8 @@
   --color-container-fg: var(--color-input-fg);
   --color-container-border: var(--color-input-border);
 
+  --color-black-bg: oklch(0 0 0);
+
   /* Specific-use Colors */
 
   --color-error: oklch(0.6179 0.2337 29.59);
