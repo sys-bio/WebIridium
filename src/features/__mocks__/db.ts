@@ -19,6 +19,8 @@ export const openMainDb = () =>
     close() {},
   });
 
+export const ensureMigrateDbFromOpfs = () => Promise.resolve();
+
 export const listProjectsRaw = async () => {
   const projects = await getMockProjects();
   const result: Map<string, Metadata> = new Map();
