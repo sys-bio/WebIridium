@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { IDBPDatabase } from "idb";
 import styles from "./DatabaseInitializer.module.css";
-import { ensureMigrateDbFromOpfs, openMainDb } from "@/features/db";
+import { openMainDb } from "@/features/db";
 
 export interface DatabaseInitializerProps {
   children: React.ReactNode;
@@ -41,7 +41,6 @@ export const DatabaseInitializer = ({ children }: DatabaseInitializerProps) => {
       }
 
       if (!done) {
-        await ensureMigrateDbFromOpfs();
         setLoaded(true);
       }
     };

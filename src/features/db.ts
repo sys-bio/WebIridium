@@ -21,15 +21,12 @@ import {
   getNewProjectId,
   getNewProjectData,
 } from "./savedData";
-import { getAllProjects } from "./fileSystem";
 
 const MAIN_DB_NAME = "main";
 const METADATA_STORE = "metadata";
 const IRIDIUM_STORE = "iridium";
 const RESULTS_STORE = "results";
 const CODE_STORE = "code";
-
-const MIGRATED_FLAG = "migratedFromOpfs";
 
 let mainDb: IDBPDatabase | undefined;
 let projectHandle:
@@ -66,36 +63,6 @@ export const openMainDb = async (
   });
 
   return mainDb;
-};
-
-export const ensureMigrateDbFromOpfs = async (): Promise<void> => {
-  if (!localStorage.getItem(MIGRATED_FLAG)) {
-    const db = checkMainDb();
-    const projects = await getAllProjects();
-
-    const tx = db.transaction(
-      [METADATA_STORE, IRIDIUM_STORE, RESULTS_STORE, CODE_STORE],
-      "readwrite",
-    );
-
-    const metadataStore = tx.objectStore(METADATA_STORE);
-    const iridiumStore = tx.objectStore(IRIDIUM_STORE);
-    const resultsStore = tx.objectStore(RESULTS_STORE);
-    const codeStore = tx.objectStore(CODE_STORE);
-
-    await Promise.all(
-      Array.from(projects.entries()).flatMap(([id, project]) => [
-        metadataStore.put(project.metadata, id),
-        iridiumStore.put(project.iridium, id),
-        resultsStore.put(project.results, id),
-        codeStore.put(project.code, id),
-      ]),
-    );
-
-    await tx.done;
-
-    localStorage.setItem(MIGRATED_FLAG, "done");
-  }
 };
 
 const checkMainDb = (): IDBPDatabase => {

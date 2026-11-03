@@ -18,27 +18,54 @@ import {
 } from "@/features/colors";
 import { DASH_ARRAYS } from "@/features/lineStyle";
 
-const AXIS_LABEL_MAX_DECIMALS = 2;
-
 // how many items you need before rotating x-axis labels by 45 degrees
 const X_AXIS_LABEL_ROTATE45_MIN = 12;
 const X_AXIS_LABEL_ROTATE90_MIN = 20;
 
 const PADDING = 50; // hard-coded but whatever
+const MIN_RANGE = 1e-12; // Minimum range to display on auto-scale. Should be small enough
 
 const calculatePlotBounds = (...values: number[][]): [number, number] => {
-  const min = values
-    .flat()
-    .reduce((acc, current) => Math.min(acc, current), Infinity);
-  const max = values
-    .flat()
-    .reduce((acc, current) => Math.max(acc, current), -Infinity);
+  const flat = values.flat();
+  const min = flat.reduce((acc, current) => Math.min(acc, current), Infinity);
+  const max = flat.reduce((acc, current) => Math.max(acc, current), -Infinity);
 
-  if (min === Infinity || max === Infinity || min === max) {
+  if (min === Infinity || max === -Infinity) {
     return [0, 10];
-  } else {
-    return [min, max];
+  } else if (min == max) {
+    return [min, min + 10];
   }
+
+  return [min, max];
+};
+
+/** Calculates the plot bounds but with nice numbers */
+export const calculatePlotBoundsNice = (
+  ticks: number,
+  ...values: number[][]
+): [number, number] => {
+  const flat = values.flat();
+  const min = flat.reduce((acc, current) => Math.min(acc, current), Infinity);
+  const max = flat.reduce((acc, current) => Math.max(acc, current), -Infinity);
+
+  if (min === Infinity || max === -Infinity) {
+    return [0, 10];
+  }
+
+  const range = Math.max(MIN_RANGE, max - min);
+  const targetStepSize = range / ticks;
+  const magnitude = 10 ** Math.floor(Math.log10(targetStepSize));
+  let magnitudeMsd = Math.round(targetStepSize / magnitude);
+  if (magnitudeMsd > 5) magnitudeMsd = 10;
+  else if (magnitudeMsd > 4) magnitudeMsd = 5;
+  else if (magnitudeMsd > 2) magnitudeMsd = 4;
+  else if (magnitudeMsd > 1) magnitudeMsd = 2;
+  const stepSize = magnitudeMsd * magnitude;
+
+  return [
+    Math.floor(min / stepSize) * stepSize,
+    Math.ceil((min + range) / stepSize) * stepSize,
+  ];
 };
 
 /**
@@ -54,10 +81,6 @@ const mapCount = <T>(count: number, callback: (n: number) => T): T[] => {
 
 const formatWithMaxDecimals = (n: number, maxDecimals: number): string => {
   return (Math.floor(n * 10 ** maxDecimals) / 10 ** maxDecimals).toString();
-};
-
-const axisLabelFormatter = (value: number): string => {
-  return formatWithMaxDecimals(value, AXIS_LABEL_MAX_DECIMALS);
 };
 
 export const generatePlotParameters = (
@@ -226,7 +249,8 @@ export const generatePlotParameters = (
         )
       : [minX, maxX];
   const [rangeMinY, rangeMaxY] = isAutoscaledY
-    ? calculatePlotBounds(
+    ? calculatePlotBoundsNice(
+        majorGrid.numYGrids,
         columns
           .filter(
             (c) =>
@@ -245,6 +269,17 @@ export const generatePlotParameters = (
           ),
       )
     : [minY, maxY];
+
+  const axisLabelMaxDecimals =
+    rangeMaxY - rangeMinY < 0.05
+      ? Math.abs(
+          Math.floor(Math.log10(Math.max(MIN_RANGE, rangeMaxY - rangeMinY))),
+        ) + 2
+      : 2;
+  console.log(axisLabelMaxDecimals, rangeMinY, rangeMaxY);
+  const axisLabelFormatter = (value: number): string => {
+    return formatWithMaxDecimals(value, axisLabelMaxDecimals);
+  };
 
   const xMajorTickInterval = (rangeMaxX - rangeMinX) / majorGrid.numXGrids;
   const xMajorTicks = mapCount(

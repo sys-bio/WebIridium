@@ -4,25 +4,11 @@ import {
   createMockWorkerMessageHandler,
   MockWorker,
 } from "@/testing-utils/mockWorker.ts";
-import type { FileSystemAction } from "@/workers/FileSystemWorker.ts";
 
 export const createWorker = (type: WorkerType) => {
   const worker = new MockWorker();
 
   switch (type) {
-    case "fileSystem": {
-      worker.port.addEventListener(
-        "message",
-        createMockWorkerMessageHandler(worker, (unknownAction) => {
-          const action = unknownAction as FileSystemAction;
-          switch (action.type) {
-            case "getAllProjects":
-              return new Map();
-          }
-        }),
-      );
-      break;
-    }
     case "copasi": {
       worker.port.addEventListener(
         "message",
